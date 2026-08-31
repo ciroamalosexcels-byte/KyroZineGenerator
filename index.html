@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kyro Zine Generator — Hacedor de libritos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Inter:wght@400;500;600&family=Mouse+Memoirs&family=Special+Elite&family=Poppins:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  /* Dark theme: near-black surfaces throughout the app chrome. The actual
+     page/sheet previews stay paper-white on purpose (hardcoded #fff in the
+     canvas-rendering code and in .sheet-page-cell/.flip-back/#stage-canvas/
+     #preview-canvas) — those are the physical "hojas" being designed, not
+     app chrome, so they're untouched. --stamp/--stamp-dark (the button
+     accent) are also untouched by design. */
+  --bg:#121214; --bg-card:#2c2c32; --paper-dark:#343439;
+  --text:#f6f5f2; --muted:#b6b6b2; --border:#4c4c52;
+  --sidebar:#18181a; --stage:#0b0b0d; --accent:#0a0a0a;
+  --stamp:#1e3a6b; --stamp-dark:#15294a;
+  --ring:0 0 0 1px rgba(255,255,255,.14);
+  --radius:6px; --radius-sm:4px;
+  color-scheme:dark;
+  --font-ui:'Poppins','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --font-label:'Poppins','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --font-display:'Poppins','Inter',sans-serif;
+  --font-hand:'Poppins','Inter',sans-serif;
+  --font-typewriter:'Poppins','Inter',sans-serif;
+  --shadow-md:0 4px 12px rgba(0,0,0,0.4);
+  --transition:0.15s ease;
+  --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.05 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:var(--font-ui);font-size:15px;color:var(--text);
+  background-color:var(--bg);background-image:var(--grain);background-size:180px 180px;background-repeat:repeat;
+  -webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .15s ease,background .15s ease,color .15s ease}
+button:disabled{cursor:default}
+input,select,textarea{font-family:inherit;color:inherit}
+input[type=range],input[type=checkbox]{accent-color:var(--stamp)}
+
+header{height:50px;background:var(--accent);display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.1rem;flex-shrink:0;gap:1rem;position:relative;box-shadow:0 2px 0 var(--stamp),0 3px 0 var(--accent);flex-wrap:nowrap}
+header::after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:4px;
+  background-image:radial-gradient(circle at 50% 50%,var(--accent) 0.9px,transparent 1.4px);
+  background-size:5px 4px;background-repeat:repeat-x;opacity:.55;pointer-events:none}
+.logo{font-family:var(--font-display);color:#fff;font-size:1.25rem;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.header-left{display:flex;align-items:center;gap:1rem}
+.header-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.header-group{display:flex;align-items:center;gap:.35rem}
+.header-label{font-family:var(--font-label);font-weight:600;font-size:.76rem;color:rgba(255,253,246,.85);letter-spacing:.04em;text-transform:uppercase}
+.toggle-group{display:flex;border-radius:var(--radius);overflow:hidden;background:rgba(255,255,255,.06)}
+.toggle-group button{background:transparent;color:rgba(255,253,246,.65);padding:.32rem .65rem;
+  font-family:var(--font-label);font-weight:500;font-size:.82rem;letter-spacing:.02em}
+.toggle-group button.active{background:var(--stamp);color:#fff}
+.toggle-group button:not(.active):hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+.toggle-group button:active{transform:translateY(1px) scale(.96)}
+.num-input{width:56px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;
+  border-radius:var(--radius-sm);padding:.3rem .4rem;font-size:.85rem;text-align:center}
+.mini-btn{background:rgba(255,253,246,.14);color:rgba(255,253,246,.92);
+  padding:.32rem .6rem;font-family:var(--font-label);font-weight:500;font-size:.8rem;letter-spacing:.02em;border-radius:var(--radius-sm);
+  box-shadow:var(--ring),2px 2px 0 rgba(0,0,0,.4)}
+.mini-btn:hover{color:#fff;background:rgba(255,253,246,.22);transform:translateY(-1px)}
+.mini-btn:active{transform:translateY(1px);box-shadow:var(--ring),1px 1px 0 rgba(0,0,0,.4)}
+.export-btn{color:#fff;background:var(--stamp);font-family:var(--font-label);font-weight:600;
+  font-size:.86rem;letter-spacing:.03em;padding:.42rem .95rem;border-radius:var(--radius-sm);transform:rotate(-1deg);
+  box-shadow:2px 2px 0 var(--stamp-dark)}
+.export-btn:hover{transform:rotate(0deg) translateY(-2px);box-shadow:3px 4px 0 var(--stamp-dark)}
+.export-btn:active{transform:rotate(0deg) translateY(1px) scale(.97);box-shadow:1px 1px 0 var(--stamp-dark)}
+
+.workspace{display:flex;height:calc(100vh - 50px)}
+#sidebar{width:220px;flex-shrink:0;background:var(--sidebar);border-right:1.5px dashed var(--border);
+  overflow-y:auto;overflow-x:hidden;padding:.7rem .55rem;display:flex;flex-direction:column;gap:.7rem}
+#sidebar[hidden]{display:none}
+#sidebar::-webkit-scrollbar{width:3px}
+#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
+.sheet-thumb{display:flex;flex-direction:column;gap:.3rem}
+.sheet-thumb-label{font-family:var(--font-label);font-weight:600;font-size:.66rem;color:var(--muted);
+  text-align:center;letter-spacing:.02em;text-transform:uppercase}
+.sheet-thumb-grid{display:grid;grid-template-rows:1fr 1fr;gap:2px;width:100%;background:var(--border);
+  border:1.5px solid var(--text);border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.1);padding:2px}
+.sheet-page-cell{cursor:pointer;position:relative;background:#fff;overflow:hidden;transition:outline-color var(--transition)}
+.sheet-page-cell canvas{width:100%;height:100%;display:block;object-fit:cover}
+.sheet-page-cell.selected{outline:2.5px solid var(--stamp);outline-offset:-2.5px;z-index:1}
+.sheet-page-cell.dragging{opacity:.35}
+.cell-num-badge{position:absolute;bottom:2px;right:3px;font-family:var(--font-label);font-weight:700;
+  font-size:.62rem;color:rgba(255,255,255,.95);text-shadow:0 0 3px rgba(0,0,0,.85),0 1px 2px rgba(0,0,0,.9);
+  pointer-events:none;letter-spacing:.01em}
+.sheet-page-cell .thumb-del{position:absolute;top:2px;right:2px;width:16px;height:16px;line-height:14px;text-align:center;
+  background:var(--bg-card);border-radius:50%;font-size:.66rem;color:var(--muted);opacity:0;
+  box-shadow:1px 1px 0 rgba(0,0,0,.25);transition:opacity var(--transition)}
+.sheet-page-cell:hover .thumb-del{opacity:1}
+.preview-btn{width:100%;padding:.55rem .3rem;background:var(--stamp);color:#fff;
+  border-radius:var(--radius-sm);font-family:var(--font-label);font-weight:600;font-size:.78rem;letter-spacing:.03em;
+  text-align:center;box-shadow:2px 2px 0 var(--stamp-dark);
+  position:sticky;top:0;z-index:2}
+.preview-btn:hover{transform:translateY(-2px);box-shadow:2px 4px 0 var(--stamp-dark)}
+.preview-btn:active{transform:translateY(1px);box-shadow:1px 1px 0 var(--stamp-dark)}
+.pagecount-row{display:flex;flex-direction:column;gap:.3rem;margin-top:.2rem;padding-top:.5rem;border-top:1.5px dashed var(--border)}
+.pagecount-row label{font-family:var(--font-label);font-size:.7rem;color:var(--muted);letter-spacing:.03em}
+.pagecount-row .row{display:flex;gap:.3rem}
+.pagecount-row input{width:100%;padding:.3rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.8rem}
+.clear-btn{margin-top:.3rem;width:100%;padding:.5rem .3rem;background:var(--bg-card);color:var(--text);
+  border-radius:var(--radius-sm);font-family:var(--font-label);font-weight:600;font-size:.72rem;letter-spacing:.03em;text-align:center;
+  box-shadow:var(--ring),2px 2px 0 rgba(0,0,0,.3)}
+.clear-btn:hover{transform:translateY(-1px);box-shadow:var(--ring),2px 3px 0 rgba(0,0,0,.3)}
+.clear-btn:active{transform:translateY(1px);box-shadow:var(--ring),1px 1px 0 rgba(0,0,0,.3)}
+
+#main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#slide-view{flex:1;background:var(--stage);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:hidden;min-height:0;padding:1rem;position:relative;gap:.6rem;perspective:1800px}
+.flip-overlay{position:absolute;z-index:8;transform-style:preserve-3d;pointer-events:none}
+.flip-overlay .flip-face{position:absolute;inset:0;backface-visibility:hidden;overflow:hidden;border-radius:2px}
+.flip-overlay .flip-face img{width:100%;height:100%;display:block;object-fit:fill}
+.flip-overlay .flip-back{transform:rotateY(180deg);background:#ffffff}
+.flip-overlay .flip-shade{position:absolute;inset:0;opacity:0}
+.flip-overlay.flipping{transition:transform .6s cubic-bezier(.42,.08,.22,1)}
+/* Shadow builds up as the leaf lifts off the page, peaks when it's most
+   edge-on (midway through the turn), then eases back out as it settles —
+   a curve, not a hard cut, so it doesn't just appear/vanish. */
+.flip-overlay.flipping .flip-shade{animation:flip-shade-pulse .6s ease}
+@keyframes flip-shade-pulse{
+  0%{opacity:0}
+  50%{opacity:1}
+  100%{opacity:0}
+}
+#slide-view::before{content:"";position:absolute;top:12px;right:14px;width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle,transparent 0 5px,var(--stamp) 5px 6.5px,transparent 6.5px),
+  linear-gradient(90deg,transparent 47%,var(--stamp) 47% 53%,transparent 53%),
+  linear-gradient(0deg,transparent 47%,var(--stamp) 47% 53%,transparent 53%);opacity:.7;pointer-events:none}
+#stage-canvas{display:block;max-width:100%;max-height:calc(100% - 40px);width:auto;height:auto;
+  box-shadow:0 12px 48px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.3);border-radius:2px;background:#fff;touch-action:none;
+  transition:width .35s ease}
+.stage-label{font-family:var(--font-label);color:rgba(255,255,255,.7);font-size:.85rem;letter-spacing:.02em}
+
+#edit-panel{flex-shrink:0;height:186px;border-top:1.5px dashed var(--border);background:var(--sidebar);
+  overflow:auto;padding:.6rem 1rem;display:flex;flex-direction:column}
+.edit-toolbar{display:flex;gap:1rem;height:100%}
+.edit-block{display:flex;flex-direction:column;gap:.32rem;flex:1.3 1 0;min-width:0}
+.edit-block-page{flex:0.85 1 0}
+.field-label{font-family:var(--font-label);font-weight:600;font-size:.68rem;color:var(--muted);letter-spacing:.03em;text-transform:uppercase}
+.row-inline{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.mini-field{display:flex;align-items:center;gap:.3rem;font-family:var(--font-label);font-size:.66rem;color:var(--muted);white-space:nowrap}
+.mini-field-label{font-family:var(--font-label);font-size:.7rem;color:var(--muted)}
+.file-btn,.plain-btn{padding:.32rem .55rem;background:var(--bg-card);color:var(--text);border-radius:var(--radius-sm);
+  font-family:var(--font-label);font-weight:500;font-size:.72rem;letter-spacing:.02em;box-shadow:var(--ring),1.5px 1.5px 0 rgba(0,0,0,.35)}
+.file-btn:hover,.plain-btn:hover{transform:translateY(-1px)}
+.file-btn:active,.plain-btn:active{transform:translateY(1px);box-shadow:var(--ring),.5px .5px 0 rgba(0,0,0,.35)}
+.icon-btn{width:26px;height:26px;flex-shrink:0;background:var(--bg-card);color:var(--text);border-radius:var(--radius-sm);font-size:.85rem;
+  box-shadow:var(--ring),1.5px 1.5px 0 rgba(0,0,0,.3)}
+.icon-btn.active{background:var(--stamp);color:#fff}
+.icon-btn:hover{transform:translateY(-1px)}
+.icon-btn:active{transform:translateY(1px);box-shadow:var(--ring),.5px .5px 0 rgba(0,0,0,.3)}
+input[type=range]{width:100px}
+.mini-field input[type=range]{width:90px}
+textarea{width:100%;min-height:40px;flex-shrink:0;padding:.35rem;border:1px solid var(--border);border-radius:var(--radius-sm);resize:vertical;font-size:.82rem;background:var(--bg-card);color:var(--text)}
+select.plain-select{padding:.28rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.74rem;max-width:170px;background:var(--bg-card);color:var(--text)}
+.color-swatch{width:28px;height:28px;border:2px solid var(--text);border-radius:4px;box-shadow:1px 1px 0 rgba(0,0,0,.15)}
+.color-swatch:hover{transform:scale(1.08)}
+.color-swatch:active{transform:scale(.92)}
+.color-swatch.sm{width:22px;height:22px;flex-shrink:0}
+.hint{color:var(--muted);font-family:var(--font-hand);font-size:.88rem;line-height:1.15}
+.clear-page-btn{margin-top:auto;padding:.4rem .3rem;background:var(--bg-card);color:var(--text);
+  border-radius:var(--radius-sm);font-family:var(--font-label);font-weight:600;font-size:.7rem;letter-spacing:.03em;text-align:center;
+  box-shadow:var(--ring),1.5px 1.5px 0 rgba(0,0,0,.3)}
+.clear-page-btn:hover{background:var(--stamp);color:#fff;transform:translateY(-1px)}
+.clear-page-btn:active{transform:translateY(1px);box-shadow:var(--ring),.5px .5px 0 rgba(0,0,0,.3)}
+
+
+.modal{position:fixed;inset:0;background:rgba(10,10,10,.55);display:flex;align-items:center;justify-content:center;z-index:50}
+.modal[aria-hidden="true"]{display:none}
+.modal-box{background:var(--sidebar);border-radius:var(--radius);padding:1.2rem 1.3rem;max-width:420px;width:90%;
+  box-shadow:0 12px 40px rgba(0,0,0,.4);border:1px solid var(--border)}
+.modal-title{font-family:var(--font-label);font-weight:600;font-size:1rem;margin-bottom:.6rem;letter-spacing:.01em}
+.modal-msg{font-size:.9rem;line-height:1.45;color:var(--text);margin-bottom:1rem}
+.modal-actions{display:flex;justify-content:flex-end;gap:.6rem}
+.modal-box .mini-btn{background:var(--bg-card);color:var(--text);box-shadow:var(--ring),2px 2px 0 rgba(0,0,0,.3)}
+.modal-box .mini-btn:hover{background:var(--paper-dark)}
+.toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--stamp);color:#fff;
+  padding:.55rem 1rem;border-radius:var(--radius-sm);font-family:var(--font-label);font-weight:500;font-size:.82rem;
+  box-shadow:0 6px 18px rgba(0,0,0,.3);z-index:80;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.toast.show{opacity:1}
+
+.color-popover{position:fixed;z-index:70;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:.7rem;box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:.5rem;width:200px}
+.color-popover[hidden]{display:none}
+.color-popover canvas{border-radius:3px;cursor:crosshair;display:block}
+.cp-header{display:flex;align-items:center;justify-content:space-between}
+.cp-title{font-family:var(--font-label);font-weight:600;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.cp-close{width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:transparent;
+  color:var(--muted);border-radius:50%}
+.cp-close:hover{background:var(--sidebar);color:var(--text);transform:rotate(90deg)}
+.cp-close:active{transform:rotate(90deg) scale(.88)}
+.cp-row{display:flex;gap:.4rem;align-items:center}
+.cp-row input[type=text]{flex:1;min-width:0;padding:.3rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.85rem;background:var(--bg-card);color:var(--text)}
+.cp-eyedrop{width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);background:var(--bg);color:var(--text);box-shadow:var(--ring),1.5px 1.5px 0 rgba(0,0,0,.3)}
+.cp-eyedrop:hover{transform:translateY(-1px)}
+.cp-eyedrop:active{transform:translateY(1px);box-shadow:var(--ring),.5px .5px 0 rgba(0,0,0,.3)}
+.cp-eyedrop.active{background:var(--stamp);color:#fff}
+.cp-eyedrop-cancel{display:none}
+.cp-eyedrop.active .cp-eyedrop-icon{display:none}
+.cp-eyedrop.active .cp-eyedrop-cancel{display:block}
+
+.export-menu{position:fixed;z-index:60;background:var(--sidebar);border:1px solid var(--border);border-radius:var(--radius);
+  padding:.8rem;box-shadow:0 10px 30px rgba(0,0,0,.35);width:260px;display:flex;flex-direction:column;gap:.5rem}
+.export-menu button.plain-btn{width:100%;text-align:left}
+.export-menu label{font-size:.8rem;display:flex;gap:.4rem;align-items:flex-start}
+.export-menu button.plain-btn{font-size:.82rem}
+
+.page-settings-menu{position:fixed;z-index:60;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:.7rem .8rem;box-shadow:0 10px 30px rgba(0,0,0,.35);width:172px;display:flex;flex-direction:column;gap:.55rem}
+.page-settings-menu[hidden]{display:none}
+.page-settings-menu .header-group{flex-direction:column;align-items:flex-start;gap:.3rem}
+.page-settings-menu .header-label{color:var(--muted)}
+.page-settings-menu .toggle-group{background:var(--bg);width:100%}
+.page-settings-menu .toggle-group button{color:var(--muted);flex:1}
+.page-settings-menu .toggle-group button.active{background:var(--stamp);color:#fff}
+.page-settings-menu .num-input{background:var(--bg-card);border:1px solid var(--border);color:var(--text);width:100%}
+.page-settings-menu .pagecount-apply-row{display:flex;gap:.4rem;width:100%}
+.page-settings-menu .pagecount-apply-row .num-input{flex:1;width:auto;min-width:0}
+.page-settings-menu .mini-btn{background:var(--stamp);color:#fff;font-weight:600;box-shadow:2px 2px 0 var(--stamp-dark)}
+.page-settings-menu .mini-btn:hover{background:var(--stamp-dark);color:#fff}
+.page-settings-menu #apply-pagecount{flex-shrink:0}
+
+.drop-hint{position:absolute;inset:1rem;border:2px dashed var(--stamp);border-radius:var(--radius);
+  display:none;align-items:center;justify-content:center;pointer-events:none;background:rgba(30,58,107,.12);z-index:5}
+.drop-hint span{font-family:var(--font-label);font-weight:600;color:#fff;background:var(--stamp);
+  padding:.6rem 1.1rem;border-radius:var(--radius-sm);font-size:.9rem}
+#slide-view.drag-over .drop-hint{display:flex}
+#stage-canvas.uploadable{cursor:pointer}
+
+.nav-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.14);color:rgba(255,255,255,.92);box-shadow:var(--ring);
+  font-size:1.1rem;display:flex;align-items:center;justify-content:center;z-index:6}
+.nav-arrow:hover{background:var(--stamp);color:#fff;transform:translateY(-50%) scale(1.1)}
+.nav-arrow:active{transform:translateY(-50%) scale(.92)}
+.nav-arrow:disabled{opacity:.25;pointer-events:none}
+.nav-prev{left:1.2rem}
+.nav-next{right:1.2rem}
+
+.preview-modal-box{position:relative;width:min(92vw,880px);height:min(90vh,760px);background:var(--stage);
+  border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden;
+  display:flex;flex-direction:column}
+#preview-stage{position:relative;flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;overflow:hidden;padding:1.6rem;perspective:1800px}
+#preview-canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;
+  box-shadow:0 12px 48px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.3);border-radius:2px;background:#fff;
+  transform-origin:center center;touch-action:none}
+.preview-close{position:absolute;top:12px;right:12px;z-index:10;width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,.14);color:rgba(255,255,255,.92);box-shadow:var(--ring);
+  display:flex;align-items:center;justify-content:center}
+.preview-close:hover{background:var(--stamp);color:#fff;transform:rotate(90deg) scale(1.05)}
+.preview-close:active{transform:rotate(90deg) scale(.9)}
+
+/* Bottom control bar — kept off the (often white) page canvas, unlike the
+   floating .nav-arrow used on the main edit stage, so the arrows stay legible
+   against any page content. */
+.preview-controls{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:1.1rem;
+  padding:.7rem 1rem;border-top:1px solid rgba(255,255,255,.12)}
+.preview-ctrl-btn{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:rgba(255,255,255,.14);
+  color:rgba(255,255,255,.92);box-shadow:var(--ring);display:flex;align-items:center;
+  justify-content:center;font-size:1rem}
+.preview-ctrl-btn:hover{background:var(--stamp);color:#fff;transform:scale(1.1)}
+.preview-ctrl-btn:active{transform:scale(.9)}
+.preview-ctrl-btn:disabled{opacity:.25;pointer-events:none}
+.preview-info{display:flex;align-items:center;gap:.6rem;font-family:var(--font-label);
+  color:rgba(255,255,255,.85);font-size:.85rem;letter-spacing:.02em;min-width:220px;justify-content:center}
+
+.upload-fab{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;
+  display:flex;align-items:center;justify-content:center;width:34px;height:34px;
+  background:transparent;color:rgba(10,10,10,.38);font-size:1.6rem;font-weight:300;line-height:1}
+.upload-fab:hover{color:var(--stamp);transform:translate(-50%,-50%) scale(1.15)}
+.upload-fab:active{transform:translate(-50%,-50%) scale(.9)}
+.upload-fab[hidden]{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left"><span class="logo">Kyro Zine Generator</span></div>
+  <div class="header-right">
+    <button class="mini-btn" id="howto-btn">Cómo coserlo</button>
+    <button class="mini-btn" id="page-settings-btn" title="Configuración de página">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+      Página
+    </button>
+    <button class="export-btn" id="export-btn">EXPORTAR PDF</button>
+  </div>
+</header>
+
+<div class="page-settings-menu" id="page-settings-menu" hidden>
+  <div class="header-group"><span class="header-label">Hoja</span>
+    <div class="toggle-group" id="sheet-toggle">
+      <button data-val="A4" class="active">A4</button>
+      <button data-val="A3">A3</button>
+    </div>
+  </div>
+  <div class="header-group"><span class="header-label">Cuadernillo</span>
+    <div class="toggle-group" id="sig-toggle">
+      <button data-val="4" class="active">4</button>
+      <button data-val="8">8</button>
+      <button data-val="16">16</button>
+    </div>
+  </div>
+  <div class="header-group"><span class="header-label">Páginas</span>
+    <div class="pagecount-apply-row">
+      <input class="num-input" id="pagecount-input" type="number" min="4" step="1" value="20">
+      <button class="mini-btn" id="apply-pagecount">Aplicar</button>
+    </div>
+  </div>
+  <div class="header-group"><span class="header-label">Proyecto</span>
+    <button class="mini-btn" id="save-project-btn" style="width:100%">Guardar (.kyro)</button>
+    <button class="mini-btn" id="load-project-btn" style="width:100%;margin-top:.3rem">Cargar proyecto</button>
+  </div>
+</div>
+<input type="file" id="project-file-input" accept=".kyro,.json" style="display:none">
+<input type="file" id="font-file-input" accept=".ttf,.otf,.woff,.woff2" style="display:none">
+
+<div class="workspace">
+  <aside id="sidebar">
+    <button class="preview-btn" id="preview-open-btn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>
+      Vista previa
+    </button>
+    <div id="slide-list"></div>
+    <div class="pagecount-row">
+      <button class="clear-btn" id="clear-btn">EMPEZAR DE NUEVO</button>
+    </div>
+  </aside>
+
+  <div id="main-area">
+    <div id="slide-view">
+      <button class="nav-arrow nav-prev" id="nav-prev" type="button" title="Página anterior" aria-label="Página anterior">&#10094;</button>
+      <button class="nav-arrow nav-next" id="nav-next" type="button" title="Página siguiente" aria-label="Página siguiente">&#10095;</button>
+      <canvas id="stage-canvas"></canvas>
+      <div class="stage-label" id="stage-label"></div>
+      <div class="drop-hint" id="drop-hint"><span>Soltá la foto acá</span></div>
+    </div>
+    <div id="edit-panel"></div>
+    <input type="file" id="global-file-input" accept="image/*" style="display:none">
+  </div>
+</div>
+
+<div id="confirm-modal" class="modal" aria-hidden="true">
+  <div class="modal-box">
+    <div class="modal-title" id="confirm-title">¿Confirmar?</div>
+    <div class="modal-msg" id="confirm-msg"></div>
+    <div class="modal-actions">
+      <button class="mini-btn" id="confirm-cancel" style="color:var(--text);border-color:var(--border)">Cancelar</button>
+      <button class="mini-btn" id="confirm-ok" style="background:var(--stamp);color:#fff;border-color:var(--stamp)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="howto-modal" class="modal" aria-hidden="true">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-title">Cómo armar y coser el librito</div>
+    <div class="modal-msg" id="howto-body" style="white-space:pre-line"></div>
+    <div class="modal-actions">
+      <button class="mini-btn" id="howto-close" style="background:var(--stamp);color:#fff;border-color:var(--stamp)">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="preview-modal" class="modal" aria-hidden="true">
+  <div class="preview-modal-box">
+    <button class="preview-close" id="preview-close" type="button" title="Cerrar" aria-label="Cerrar">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+    <div id="preview-stage">
+      <canvas id="preview-canvas"></canvas>
+    </div>
+    <div class="preview-controls">
+      <button class="preview-ctrl-btn" id="preview-nav-prev" type="button" title="Cuadernillo anterior" aria-label="Cuadernillo anterior">&#10094;</button>
+      <div class="preview-info">
+        <span id="preview-label"></span>
+      </div>
+      <button class="preview-ctrl-btn" id="preview-nav-next" type="button" title="Cuadernillo siguiente" aria-label="Cuadernillo siguiente">&#10095;</button>
+    </div>
+  </div>
+</div>
+
+<div class="color-popover" id="color-popover" hidden>
+  <div class="cp-header">
+    <span class="cp-title">Color</span>
+    <button class="cp-close" id="cp-close" type="button" title="Cerrar" aria-label="Cerrar">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+  </div>
+  <canvas id="cp-sv" width="184" height="130"></canvas>
+  <canvas id="cp-hue" width="184" height="14"></canvas>
+  <div class="cp-row">
+    <input id="cp-hex" type="text" maxlength="7" value="#000000">
+    <button class="cp-eyedrop" id="cp-eyedrop" type="button" title="Cuentagotas: tomar color de la imagen">
+      <svg class="cp-eyedrop-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 4.5a2.5 2.5 0 0 1 0 3.54l-2.12 2.12-3.54-3.54 2.12-2.12a2.5 2.5 0 0 1 3.54 0Z"/><path d="M15.36 8.64 6 18l-3 1 1-3 9.36-9.36"/></svg>
+      <svg class="cp-eyedrop-cancel" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="export-menu" id="export-menu" hidden>
+  <button class="plain-btn" id="export-auto">PDF dúplex automático</button>
+  <button class="plain-btn" id="export-manual">PDF manual (frentes + dorsos)</button>
+  <label><input type="checkbox" id="reverse-stack"> Invertir orden de la pila al imprimir los dorsos</label>
+  <div class="hint" style="font-family:var(--font-ui);font-size:.66rem">Si al probar con una sola hoja el dorso no coincide con el frente, tildá esta opción y volvé a exportar.</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------- constants ---------- */
+const SHEET_DIMS = { A4:{w:297,h:210}, A3:{w:420,h:297} }; // landscape mm
+const PREVIEW_PPMM = 3.7795275591; // ~96dpi
+const EXPORT_PPMM = 300/25.4;      // 300dpi
+const PT_TO_MM = 0.352778;
+/* All four temporarily point at Poppins — ids/labels kept stable so saved
+   projects keep working once each is pointed at a distinct typeface again. */
+const FONTS = [
+  {id:'label', label:'Máquina (Special Elite)', css:"'Poppins','Inter',sans-serif"},
+  {id:'display', label:'Cartel (Mouse Memoirs)', css:"'Poppins','Inter',sans-serif"},
+  {id:'hand', label:'Manuscrita (Caveat)', css:"'Poppins','Inter',sans-serif"},
+  {id:'ui', label:'Texto (Inter)', css:"'Poppins','Inter',sans-serif"},
+];
+const STORAGE_KEY = 'kyro-zine-project-v1';
+
+/* ---------- color utils ---------- */
+function hsvToRgb(h,s,v){
+  const c=v*s, x=c*(1-Math.abs((h/60)%2-1)), m=v-c;
+  let r=0,g=0,b=0;
+  if(h<60){r=c;g=x;b=0;} else if(h<120){r=x;g=c;b=0;} else if(h<180){r=0;g=c;b=x;}
+  else if(h<240){r=0;g=x;b=c;} else if(h<300){r=x;g=0;b=c;} else {r=c;g=0;b=x;}
+  return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+}
+function rgbToHsv(r,g,b){
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+  let h=0;
+  if(d!==0){
+    if(max===r) h=60*(((g-b)/d)%6);
+    else if(max===g) h=60*((b-r)/d+2);
+    else h=60*((r-g)/d+4);
+  }
+  if(h<0)h+=360;
+  const s=max===0?0:d/max, v=max;
+  return [h,s,v];
+}
+function rgbToHex(r,g,b){ return '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join(''); }
+function hexToRgb(hex){
+  hex=(hex||'#000000').replace('#','');
+  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  if(!/^[0-9a-fA-F]{6}$/.test(hex)) hex='000000';
+  const n=parseInt(hex,16);
+  return [(n>>16)&255,(n>>8)&255,n&255];
+}
+
+/* ---------- state ----------
+   A page has no "type": image and text always coexist, each either empty or
+   filled. "Empty" is content-driven (no image src, no text content), not a
+   separate mode — "Dejar vacío" simply clears both back to their defaults. */
+function defaultImage(){ return {src:'', rotation:0, flipH:false, flipV:false, fit:'cover', offsetX:0, offsetY:0, zoom:1, frame:{thickness:0,color:'#0a0a0a'}}; }
+function defaultText(){ return {content:'', font:'display', size:28, align:'center', vAlign:'middle', color:'#0a0a0a'}; }
+function makeBlankPage(){ return {bgColor:'#ffffff', image:defaultImage(), text:defaultText()}; }
+function pageHasImage(page){ return !!(page.image && page.image.src); }
+function pageHasText(page){ return !!(page.text && page.text.content); }
+function pageIsEmpty(page){ return !pageHasImage(page) && !pageHasText(page); }
+
+let state = {
+  sheetSize:'A4',
+  signatureSize:4,
+  pageCount:20,
+  currentIndex:0,
+  reverseStack:false,
+  customFonts:[],
+  pages:[]
+};
+
+function ensurePages(){
+  while(state.pages.length < state.pageCount) state.pages.push(makeBlankPage());
+  state.pages.length = state.pageCount;
+  /* backfills image/text on pages restored from a project saved before types
+     were removed (old blank/text-only pages stored image or text as null) */
+  state.pages.forEach(p=>{
+    if(!p.image) p.image = defaultImage();
+    if(!p.text) p.text = defaultText();
+  });
+}
+
+const imageCache = new Map();
+function preloadImage(src, cb){
+  if(!src) return;
+  if(imageCache.has(src)){ cb && cb(); return; }
+  const img = new Image();
+  img.onload = ()=>{ imageCache.set(src, img); cb && cb(); };
+  img.src = src;
+}
+
+/* ---------- imposition engine ---------- */
+function pageMm(){ const s=SHEET_DIMS[state.sheetSize]; return {w:s.w/2, h:s.h}; }
+function sheetMm(){ return SHEET_DIMS[state.sheetSize]; }
+
+function buildSheets(){
+  const S = state.signatureSize, N = state.pageCount;
+  const sheets = [];
+  const sigCount = Math.round(N / S);
+  let gi = 0;
+  for(let k=0;k<sigCount;k++){
+    const offset = k*S;
+    const sheetsInSig = S/4;
+    for(let s=1;s<=sheetsInSig;s++){
+      const fl=S-2*s+2, fr=2*s-1, bl=2*s, br=S-2*s+1;
+      sheets.push({
+        signature:k+1, sheetInSig:s, sheetsInSig, globalIndex:++gi,
+        front:{left:offset+fl, right:offset+fr},
+        back:{left:offset+bl, right:offset+br}
+      });
+    }
+  }
+  return sheets;
+}
+
+function findSheetForPage(pageNum1){
+  const sheets = buildSheets();
+  for(const sh of sheets){
+    for(const side of ['front','back']){
+      if(sh[side].left===pageNum1 || sh[side].right===pageNum1) return {sheet:sh, side};
+    }
+  }
+  return null;
+}
+
+/* Groups sheets of the same cuadernillo two at a time so every sidebar thumbnail
+   keeps a true ISO ratio (a lone sheet is 1:√2 portrait; two side by side is
+   √2:1 landscape, matching a full sheet). A cuadernillo of more than 2 sheets
+   (signature 16) yields more than one thumbnail instead of one distorted one. */
+function buildSheetGroups(){
+  const sheets = buildSheets();
+  const groups = [];
+  let i = 0;
+  while(i < sheets.length){
+    const group = [sheets[i]];
+    i++;
+    if(i < sheets.length && sheets[i].signature===group[0].signature){
+      group.push(sheets[i]);
+      i++;
+    }
+    groups.push(group);
+  }
+  return groups;
+}
+
+/* ---------- rendering ---------- */
+function wrapParagraph(ctx, str, maxWidth){
+  const words = str.split(/\s+/).filter(Boolean);
+  const lines=[]; let cur='';
+  for(const w of words){
+    const test = cur? cur+' '+w : w;
+    if(ctx.measureText(test).width > maxWidth && cur){ lines.push(cur); cur=w; }
+    else cur=test;
+  }
+  if(cur) lines.push(cur);
+  return lines.length?lines:[''];
+}
+function buildLines(ctx, str, maxWidth){
+  const paras = (str||'').split('\n');
+  let out=[];
+  for(const p of paras) out = out.concat(wrapParagraph(ctx, p, maxWidth));
+  return out;
+}
+
+function drawFramedImage(ctx, img, x, y, wMm, hMm, ppmm){
+  const wPx=wMm*ppmm, hPx=hMm*ppmm, tPx=(img.frame?.thickness||0)*ppmm;
+  ctx.fillStyle = img.frame?.color || '#ffffff';
+  ctx.fillRect(x,y,wPx,hPx);
+  const ix=x+tPx, iy=y+tPx, iw=Math.max(0,wPx-2*tPx), ih=Math.max(0,hPx-2*tPx);
+  const el = imageCache.get(img.src);
+  if(!el || iw<=0 || ih<=0) return;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(ix,iy,iw,ih); ctx.clip();
+  const rotated = img.rotation===90 || img.rotation===270;
+  const natW=el.naturalWidth, natH=el.naturalHeight;
+  const effW = rotated? natH:natW, effH = rotated? natW:natH;
+  const baseScale = img.fit==='contain' ? Math.min(iw/effW, ih/effH) : Math.max(iw/effW, ih/effH);
+  const scale = baseScale * (img.zoom||1);
+  const drawW = natW*scale, drawH = natH*scale;
+  const cx = ix+iw/2 + (img.offsetX||0)*ppmm;
+  const cy = iy+ih/2 + (img.offsetY||0)*ppmm;
+  ctx.translate(cx,cy);
+  ctx.rotate((img.rotation||0)*Math.PI/180);
+  ctx.scale(img.flipH?-1:1, img.flipV?-1:1);
+  ctx.drawImage(el, -drawW/2, -drawH/2, drawW, drawH);
+  ctx.restore();
+}
+
+function drawPageText(ctx, text, x, y, wMm, hMm, ppmm){
+  const wPx=wMm*ppmm, hPx=hMm*ppmm;
+  const pad = 8*ppmm;
+  const fontDef = FONTS.find(f=>f.id===text.font) || FONTS[3];
+  const sizePx = Math.max(6,(text.size||24)) * PT_TO_MM * ppmm;
+  ctx.save();
+  ctx.fillStyle = text.color || '#0a0a0a';
+  ctx.font = `${sizePx}px ${fontDef.css}`;
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = text.align==='left'?'left':text.align==='right'?'right':'center';
+  const lines = buildLines(ctx, text.content, wPx-2*pad);
+  const lineHeight = sizePx*1.3;
+  const blockH = lines.length*lineHeight;
+  let startY;
+  if(text.vAlign==='top') startY = y+pad+sizePx;
+  else if(text.vAlign==='bottom') startY = y+hPx-pad-blockH+sizePx+ (lineHeight-sizePx);
+  else startY = y+hPx/2 - blockH/2 + sizePx;
+  const tx = text.align==='left'? x+pad : text.align==='right'? x+wPx-pad : x+wPx/2;
+  lines.forEach((line,i)=> ctx.fillText(line, tx, startY+i*lineHeight));
+  ctx.restore();
+}
+
+function drawPageContent(ctx, page, x, y, wMm, hMm, ppmm, showHint){
+  const wPx=wMm*ppmm, hPx=hMm*ppmm;
+  ctx.fillStyle = page.bgColor || '#ffffff';
+  ctx.fillRect(x,y,wPx,hPx);
+  const hasImage = pageHasImage(page);
+  const hasText = pageHasText(page);
+  const empty = !hasImage && !hasText;
+  if(empty && showHint){
+    ctx.save();
+    ctx.strokeStyle='rgba(0,0,0,0.12)'; ctx.setLineDash([5,5]); ctx.lineWidth=1;
+    ctx.strokeRect(x+4,y+4,wPx-8,hPx-8);
+    ctx.restore();
+  }
+  if(hasImage) drawFramedImage(ctx, page.image, x, y, wMm, hMm, ppmm);
+  if(hasText) drawPageText(ctx, page.text, x, y, wMm, hMm, ppmm);
+  ctx.save();
+  ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=1;
+  ctx.strokeRect(x+.5,y+.5,wPx-1,hPx-1);
+  ctx.restore();
+}
+
+/* Book-spread pagination: page 0 (cover) and the last page (back cover) show
+   alone, like the outer faces of a closed book; everything between shows as
+   a two-page spread, like an open book. Pure index functions (viewPagesFor,
+   prevViewIndex, nextViewIndex) are shared between the editor stage and the
+   read-only preview modal, which each keep their own current index. */
+function viewPagesFor(idx){
+  const N = state.pageCount;
+  if(idx<=0) return [0];
+  if(idx>=N-1) return [N-1];
+  const pairStart = 1 + Math.floor((idx-1)/2)*2;
+  return [pairStart, pairStart+1];
+}
+function prevViewIndex(idx){
+  const start = viewPagesFor(idx)[0];
+  if(start===0) return idx;
+  return start===1 ? 0 : start-2;
+}
+function nextViewIndex(idx){
+  const N = state.pageCount, vp = viewPagesFor(idx), end = vp[vp.length-1];
+  if(end===N-1) return idx;
+  return end===N-2 ? N-1 : end+1;
+}
+function currentViewPages(){ return viewPagesFor(state.currentIndex); }
+function goPrevView(){
+  const ni = prevViewIndex(state.currentIndex);
+  if(ni!==state.currentIndex) goToPage(ni);
+}
+function goNextView(){
+  const ni = nextViewIndex(state.currentIndex);
+  if(ni!==state.currentIndex) goToPage(ni);
+}
+function pageIndexAtClientX(canvas, clientX){
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width/Math.max(1,rect.width);
+  const cx = (clientX-rect.left)*scaleX;
+  const viewPages = currentViewPages();
+  const segW = canvas.width/viewPages.length;
+  const pos = Math.min(viewPages.length-1, Math.max(0, Math.floor(cx/segW)));
+  return viewPages[pos];
+}
+
+/* Draws a spread (1 or 2 pages) into canvas at its natural preview resolution.
+   Shared by the editor stage and the read-only preview modal so both stay
+   pixel-for-pixel identical — showHint draws the dashed "needs a photo"
+   rectangle used only while editing, never in the finished-book preview. */
+function renderPageSpread(canvas, viewPages, showHint){
+  const ctx = canvas.getContext('2d');
+  const {w,h} = pageMm();
+  const n = viewPages.length;
+  canvas.width = Math.round(w*PREVIEW_PPMM)*n;
+  canvas.height = Math.round(h*PREVIEW_PPMM);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  viewPages.forEach((pIdx,i)=>{
+    drawPageContent(ctx, state.pages[pIdx], i*w*PREVIEW_PPMM, 0, w, h, PREVIEW_PPMM, showHint);
+  });
+  if(n===2){
+    ctx.save();
+    ctx.strokeStyle='rgba(0,0,0,0.22)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(w*PREVIEW_PPMM,0); ctx.lineTo(w*PREVIEW_PPMM,canvas.height); ctx.stroke();
+    ctx.restore();
+  }
+  return {w,h,n};
+}
+
+function renderStage(){
+  const canvas = document.getElementById('stage-canvas');
+  const ctx = canvas.getContext('2d');
+  const label = document.getElementById('stage-label');
+  const viewPages = currentViewPages();
+  document.getElementById('nav-prev').disabled = viewPages[0]===0;
+  document.getElementById('nav-next').disabled = viewPages[viewPages.length-1]===state.pageCount-1;
+  const {w,n} = renderPageSpread(canvas, viewPages, true);
+  const total=state.pageCount;
+  let tag;
+  if(n===1){
+    tag = `Página ${viewPages[0]+1} / ${total}`;
+    if(viewPages[0]===0) tag += ' — TAPA';
+    if(viewPages[0]===total-1) tag += ' — CONTRATAPA';
+  } else {
+    tag = `Páginas ${viewPages[0]+1}-${viewPages[1]+1} / ${total}`;
+  }
+  label.textContent = tag;
+
+  const selPos = Math.max(0, viewPages.indexOf(state.currentIndex));
+  if(n===2){
+    ctx.save();
+    ctx.strokeStyle='rgba(30,58,107,0.7)'; ctx.lineWidth=3;
+    ctx.strokeRect(selPos*w*PREVIEW_PPMM+2, 2, w*PREVIEW_PPMM-4, canvas.height-4);
+    ctx.restore();
+  }
+  const anyNeedsPhoto = viewPages.some(idx=> pageIsEmpty(state.pages[idx]));
+  canvas.classList.toggle('uploadable', anyNeedsPhoto);
+  renderUploadFabs(canvas, viewPages);
+}
+
+function renderThumb(canvas, page){
+  const {w,h} = pageMm();
+  const ppmm = 0.62;
+  canvas.width = Math.round(w*ppmm); canvas.height = Math.round(h*ppmm);
+  const ctx = canvas.getContext('2d');
+  drawPageContent(ctx, page, 0, 0, w, h, ppmm);
+}
+
+/* ---------- sidebar ---------- */
+function swapPageContent(from, to){
+  if(from===to) return;
+  const tmp = state.pages[from];
+  state.pages[from] = state.pages[to];
+  state.pages[to] = tmp;
+  if(state.currentIndex===from) state.currentIndex=to;
+  else if(state.currentIndex===to) state.currentIndex=from;
+  renderAll(); save();
+}
+
+function makeSheetCell(pageNum1){
+  const idx = pageNum1-1;
+  const cell = document.createElement('div');
+  cell.className = 'sheet-page-cell' + (idx===state.currentIndex?' selected':'');
+  cell.draggable = true;
+  const canvas = document.createElement('canvas');
+  cell.appendChild(canvas);
+  const badge = document.createElement('span');
+  badge.className = 'cell-num-badge';
+  badge.textContent = idx===0 ? 'TAPA' : idx===state.pageCount-1 ? 'CONTRA' : String(pageNum1);
+  cell.appendChild(badge);
+  const del = document.createElement('div');
+  del.className='thumb-del'; del.textContent='×'; del.title='Vaciar página';
+  del.addEventListener('click', e=>{
+    e.stopPropagation();
+    state.pages[idx] = makeBlankPage();
+    renderAll(); save();
+  });
+  cell.appendChild(del);
+  cell.addEventListener('click', ()=> goToPage(idx));
+  cell.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', String(idx)); cell.classList.add('dragging'); });
+  cell.addEventListener('dragend', ()=> cell.classList.remove('dragging'));
+  cell.addEventListener('dragover', e=> e.preventDefault());
+  cell.addEventListener('drop', e=>{
+    e.preventDefault();
+    swapPageContent(+e.dataTransfer.getData('text/plain'), idx);
+  });
+  renderThumb(canvas, state.pages[idx]);
+  return cell;
+}
+
+function renderSidebar(){
+  const list = document.getElementById('slide-list');
+  list.innerHTML='';
+  const {w:sheetW, h:sheetH} = sheetMm();
+  buildSheetGroups().forEach(group=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'sheet-thumb';
+
+    const label = document.createElement('div');
+    label.className = 'sheet-thumb-label';
+    const hojas = group.map(s=>s.sheetInSig).join('-');
+    label.textContent = `Cuadernillo ${group[0].signature} — Hoja${group.length>1?'s':''} ${hojas}`;
+    wrap.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'sheet-thumb-grid';
+    grid.style.aspectRatio = `${sheetW*group.length} / ${sheetH}`;
+    grid.style.gridTemplateColumns = `repeat(${group.length*2}, 1fr)`;
+    group.forEach(sh=>{
+      grid.appendChild(makeSheetCell(sh.front.left));
+      grid.appendChild(makeSheetCell(sh.front.right));
+    });
+    group.forEach(sh=>{
+      grid.appendChild(makeSheetCell(sh.back.left));
+      grid.appendChild(makeSheetCell(sh.back.right));
+    });
+    wrap.appendChild(grid);
+
+    list.appendChild(wrap);
+  });
+}
+
+/* ---------- edit panel ---------- */
+function currentPage(){ return state.pages[state.currentIndex]; }
+
+/* Every page always has both an image slot and a text slot — no separate
+   "type" to pick, no tabs. "Dejar vacío" just resets both slots to empty. */
+function renderEditPanel(){
+  const panel = document.getElementById('edit-panel');
+  const page = currentPage();
+
+  const html = `<div class="edit-toolbar">
+    <div class="edit-block">
+      <span class="field-label">Imagen</span>
+      <div class="row-inline">
+        <button class="file-btn" id="img-upload-btn" type="button">Subir foto</button>
+        <button class="icon-btn" id="rot-ccw" title="Rotar -90°">⟲</button>
+        <button class="icon-btn" id="rot-cw" title="Rotar +90°">⟳</button>
+        <button class="icon-btn ${page.image.flipH?'active':''}" id="flip-h" title="Espejar horizontal">↔</button>
+        <button class="icon-btn ${page.image.flipV?'active':''}" id="flip-v" title="Espejar vertical">↕</button>
+      </div>
+      <div class="row-inline">
+        <button class="plain-btn ${page.image.fit==='cover'?'active':''}" data-fit="cover" style="${page.image.fit==='cover'?'background:var(--stamp);color:#fff;border-color:var(--stamp)':''}">Cubrir</button>
+        <button class="plain-btn ${page.image.fit==='contain'?'active':''}" data-fit="contain" style="${page.image.fit==='contain'?'background:var(--stamp);color:#fff;border-color:var(--stamp)':''}">Contener</button>
+        <label class="mini-field">Zoom<input type="range" id="img-zoom" min="0.2" max="4" step="0.05" value="${page.image.zoom}"></label>
+      </div>
+      <div class="row-inline">
+        <label class="mini-field">Marco<input type="range" id="frame-thickness" min="0" max="25" step="0.5" value="${page.image.frame.thickness}"></label>
+        <button class="color-swatch sm" id="frame-color" title="Color del marco" style="background:${page.image.frame.color}"></button>
+      </div>
+      <div class="hint">Clic en la página o arrastrá una foto para subirla; arrastrá sobre la página para reposicionarla.</div>
+    </div>
+
+    <div class="edit-block">
+      <span class="field-label">Texto</span>
+      <textarea id="text-content" placeholder="Escribí acá...">${page.text.content.replace(/</g,'&lt;')}</textarea>
+      <div class="row-inline">
+        <select class="plain-select" id="text-font">${FONTS.map(f=>`<option value="${f.id}" ${page.text.font===f.id?'selected':''}>${f.label}</option>`).join('')}</select>
+        <button class="icon-btn" id="upload-font-btn" type="button" title="Subir una fuente propia (.ttf/.otf/.woff)">+</button>
+        <label class="mini-field">Tamaño<input type="range" id="text-size" min="8" max="90" step="1" value="${page.text.size}"></label>
+      </div>
+      <div class="row-inline">
+        <button class="icon-btn ${page.text.align==='left'?'active':''}" data-align="left" title="Alinear a la izquierda">⯇</button>
+        <button class="icon-btn ${page.text.align==='center'?'active':''}" data-align="center" title="Centrar">◆</button>
+        <button class="icon-btn ${page.text.align==='right'?'active':''}" data-align="right" title="Alinear a la derecha">⯈</button>
+        <button class="icon-btn ${page.text.vAlign==='top'?'active':''}" data-valign="top" title="Arriba">⬆</button>
+        <button class="icon-btn ${page.text.vAlign==='middle'?'active':''}" data-valign="middle" title="Medio">■</button>
+        <button class="icon-btn ${page.text.vAlign==='bottom'?'active':''}" data-valign="bottom" title="Abajo">⬇</button>
+        <button class="color-swatch sm" id="text-color" title="Color del texto" style="background:${page.text.color}"></button>
+      </div>
+    </div>
+
+    <div class="edit-block edit-block-page">
+      <span class="field-label">Página</span>
+      <div class="row-inline">
+        <span class="mini-field-label">Fondo</span>
+        <button class="color-swatch sm" id="bg-color" title="Color de fondo" style="background:${page.bgColor}"></button>
+      </div>
+      <div class="hint">El fondo se ve detrás del texto o en huecos si usás "Contener".</div>
+      <button class="clear-page-btn" id="clear-page-btn" type="button">Dejar vacío</button>
+    </div>
+  </div>`;
+
+  panel.innerHTML = html;
+  bindEditPanelEvents(page);
+}
+
+function bindEditPanelEvents(page){
+  const panel = document.getElementById('edit-panel');
+
+  const clearBtn = panel.querySelector('#clear-page-btn');
+  if(clearBtn) clearBtn.addEventListener('click', ()=>{
+    page.image = defaultImage();
+    page.text = defaultText();
+    renderAll(); save();
+  });
+
+  const uploadBtn = panel.querySelector('#img-upload-btn');
+  if(uploadBtn) uploadBtn.addEventListener('click', ()=>{
+    uploadTargetPage = page;
+    document.getElementById('global-file-input').click();
+  });
+
+  const rotCw = panel.querySelector('#rot-cw');
+  if(rotCw) rotCw.addEventListener('click', ()=>{ page.image.rotation=(page.image.rotation+90)%360; renderAll(); save(); });
+  const rotCcw = panel.querySelector('#rot-ccw');
+  if(rotCcw) rotCcw.addEventListener('click', ()=>{ page.image.rotation=(page.image.rotation+270)%360; renderAll(); save(); });
+  const flipH = panel.querySelector('#flip-h');
+  if(flipH) flipH.addEventListener('click', ()=>{ page.image.flipH=!page.image.flipH; renderAll(); save(); });
+  const flipV = panel.querySelector('#flip-v');
+  if(flipV) flipV.addEventListener('click', ()=>{ page.image.flipV=!page.image.flipV; renderAll(); save(); });
+
+  panel.querySelectorAll('[data-fit]').forEach(b=> b.addEventListener('click', ()=>{ page.image.fit=b.dataset.fit; renderAll(); save(); }));
+
+  const zoom = panel.querySelector('#img-zoom');
+  if(zoom) zoom.addEventListener('input', ()=>{ page.image.zoom=+zoom.value; renderStage(); });
+  if(zoom) zoom.addEventListener('change', save);
+
+  const thick = panel.querySelector('#frame-thickness');
+  if(thick) thick.addEventListener('input', ()=>{ page.image.frame.thickness=+thick.value; renderStage(); });
+  if(thick) thick.addEventListener('change', save);
+
+  const frameColor = panel.querySelector('#frame-color');
+  if(frameColor) frameColor.addEventListener('click', ()=> openColorPicker(frameColor, page.image.frame.color, hex=>{
+    page.image.frame.color=hex; frameColor.style.background=hex; renderStage(); save();
+  }));
+
+  const textContent = panel.querySelector('#text-content');
+  if(textContent) textContent.addEventListener('input', ()=>{ page.text.content=textContent.value; renderStage(); });
+  if(textContent) textContent.addEventListener('change', save);
+
+  const textFont = panel.querySelector('#text-font');
+  if(textFont) textFont.addEventListener('change', ()=>{ page.text.font=textFont.value; renderStage(); save(); });
+
+  const uploadFontBtn = panel.querySelector('#upload-font-btn');
+  if(uploadFontBtn) uploadFontBtn.addEventListener('click', ()=> document.getElementById('font-file-input').click());
+
+  const textSize = panel.querySelector('#text-size');
+  if(textSize) textSize.addEventListener('input', ()=>{ page.text.size=+textSize.value; renderStage(); });
+  if(textSize) textSize.addEventListener('change', save);
+
+  panel.querySelectorAll('[data-align]').forEach(b=> b.addEventListener('click', ()=>{ page.text.align=b.dataset.align; renderAll(); save(); }));
+  panel.querySelectorAll('[data-valign]').forEach(b=> b.addEventListener('click', ()=>{ page.text.vAlign=b.dataset.valign; renderAll(); save(); }));
+
+  const textColor = panel.querySelector('#text-color');
+  if(textColor) textColor.addEventListener('click', ()=> openColorPicker(textColor, page.text.color, hex=>{
+    page.text.color=hex; textColor.style.background=hex; renderStage(); save();
+  }));
+
+  const bgColor = panel.querySelector('#bg-color');
+  if(bgColor) bgColor.addEventListener('click', ()=> openColorPicker(bgColor, page.bgColor, hex=>{
+    page.bgColor=hex; bgColor.style.background=hex; renderStage(); save();
+  }));
+}
+
+/* ---------- pan on stage (read mode, image pages) ---------- */
+(function initPan(){
+  const canvas = document.getElementById('stage-canvas');
+  let dragging=false, lastX=0, lastY=0, dragPageIdx=null;
+  canvas.addEventListener('pointerdown', e=>{
+    if(pickingColor) return;
+    const pageIdx = pageIndexAtClientX(canvas, e.clientX);
+    const page = state.pages[pageIdx];
+    if(!page.image || !page.image.src) return;
+    dragging=true; dragPageIdx=pageIdx; lastX=e.clientX; lastY=e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const page = state.pages[dragPageIdx];
+    const dx = e.clientX-lastX, dy = e.clientY-lastY;
+    lastX=e.clientX; lastY=e.clientY;
+    const rect = canvas.getBoundingClientRect();
+    const scaleFactor = canvas.width/rect.width;
+    page.image.offsetX += (dx*scaleFactor)/PREVIEW_PPMM;
+    page.image.offsetY += (dy*scaleFactor)/PREVIEW_PPMM;
+    renderStage();
+  });
+  window.addEventListener('pointerup', ()=>{ if(dragging){ dragging=false; save(); } });
+})();
+
+/* ---------- click / drag&drop to upload a photo directly on the page ---------- */
+let uploadTargetPage = null;
+
+function handleImageFile(file, targetPage){
+  if(!file || file.type.indexOf('image/')!==0) return;
+  const page = targetPage || currentPage();
+  if(!page.image) page.image = defaultImage();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    page.image.src = reader.result;
+    preloadImage(page.image.src, ()=>{ renderAll(); save(); });
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('global-file-input').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  handleImageFile(file, uploadTargetPage || currentPage());
+  uploadTargetPage = null;
+  e.target.value = '';
+});
+
+function openUploadForCurrentPage(){
+  const page = currentPage();
+  uploadTargetPage = page;
+  document.getElementById('global-file-input').click();
+}
+document.getElementById('stage-canvas').addEventListener('click', function(e){
+  if(pickingColor) return;
+  const pageIdx = pageIndexAtClientX(this, e.clientX);
+  const page = state.pages[pageIdx];
+  if(pageIdx !== state.currentIndex){ state.currentIndex = pageIdx; renderAll(); }
+  if(!pageIsEmpty(page)) return;
+  openUploadForCurrentPage();
+});
+
+function clearUploadFabs(){
+  document.querySelectorAll('.upload-fab').forEach(el=> el.remove());
+}
+function renderUploadFabs(canvas, viewPages){
+  clearUploadFabs();
+  const rect = canvas.getBoundingClientRect();
+  const viewRect = document.getElementById('slide-view').getBoundingClientRect();
+  const n = viewPages.length;
+  const segW = rect.width/n;
+  viewPages.forEach((pageIdx, i)=>{
+    const page = state.pages[pageIdx];
+    if(!pageIsEmpty(page)) return;
+    const fab = document.createElement('button');
+    fab.type = 'button';
+    fab.className = 'upload-fab';
+    fab.title = 'Subir foto';
+    fab.setAttribute('aria-label','Subir foto');
+    fab.textContent = '+';
+    fab.style.left = ((rect.left-viewRect.left) + segW*i + segW/2) + 'px';
+    fab.style.top = ((rect.top-viewRect.top) + rect.height/2) + 'px';
+    fab.addEventListener('click', ()=>{
+      state.currentIndex = pageIdx;
+      uploadTargetPage = page;
+      renderAll();
+      document.getElementById('global-file-input').click();
+    });
+    document.getElementById('slide-view').appendChild(fab);
+  });
+}
+
+/* ---------- prev/next page navigation ---------- */
+function goToPage(idx){
+  if(idx<0 || idx>=state.pageCount) return;
+  state.currentIndex = idx;
+  renderAll();
+}
+
+/* Realistic page-turn: snapshot the current spread, let the underlying
+   canvas update immediately underneath, then rotate the snapshot away
+   around the spine edge like a leaf turning, with a shading gradient.
+   Returns a pager function bound to one canvas/view pair, each with its own
+   flip lock — this is how the editor stage and the read-only preview modal
+   share the exact same turning animation without stepping on each other. */
+function makePager(canvas, view, viewPagesFn){
+  let flipping = false;
+  return function animatePageTurn(direction, changeFn){
+    if(flipping || canvas.width===0){ changeFn(); return; }
+    const rect = canvas.getBoundingClientRect();
+    const viewRect = view.getBoundingClientRect();
+    if(rect.width===0){ changeFn(); return; }
+
+    /* On a two-page spread only the turning leaf (the half nearest the
+       direction of travel) should flip, hinged at the spine where the two
+       pages meet — not the whole spread hinged at its outer edge. */
+    const isSpread = viewPagesFn().length===2;
+    const turningRight = direction==='next';
+    let srcX=0, srcW=canvas.width, dispLeft=rect.left-viewRect.left, dispWidth=rect.width;
+    if(isSpread){
+      srcW = canvas.width/2;
+      dispWidth = rect.width/2;
+      if(turningRight){ srcX = canvas.width/2; dispLeft += rect.width/2; }
+    }
+    const off = document.createElement('canvas');
+    off.width = srcW; off.height = canvas.height;
+    off.getContext('2d').drawImage(canvas, srcX, 0, srcW, canvas.height, 0, 0, srcW, canvas.height);
+    const snapshot = off.toDataURL('image/png');
+    const origin = isSpread ? (turningRight?'left center':'right center') : (direction==='next'?'left center':'right center');
+    flipping = true;
+
+    const shadeNear = 'linear-gradient(90deg, rgba(0,0,0,.4), transparent 45%)';
+    const shadeFar = 'linear-gradient(270deg, rgba(0,0,0,.4), transparent 45%)';
+    const frontShadeCss = origin==='left center' ? shadeNear : shadeFar;
+    /* the back face carries its own rotateY(180deg) to sit right-side-up once
+       flipped, which mirrors left/right — so its shade must be the opposite
+       of the front's to still land on the spine side once mirrored back. */
+    const backShadeCss = origin==='left center' ? shadeFar : shadeNear;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'flip-overlay';
+    overlay.style.left = dispLeft+'px';
+    overlay.style.top = (rect.top-viewRect.top)+'px';
+    overlay.style.width = dispWidth+'px';
+    overlay.style.height = rect.height+'px';
+    overlay.style.transformOrigin = origin;
+
+    const front = document.createElement('div');
+    front.className = 'flip-face flip-front';
+    const img = document.createElement('img');
+    img.src = snapshot;
+    const frontShade = document.createElement('div');
+    frontShade.className = 'flip-shade';
+    frontShade.style.background = frontShadeCss;
+    front.appendChild(img);
+    front.appendChild(frontShade);
+
+    const back = document.createElement('div');
+    back.className = 'flip-face flip-back';
+    const backShade = document.createElement('div');
+    backShade.className = 'flip-shade';
+    backShade.style.background = backShadeCss;
+    back.appendChild(backShade);
+
+    overlay.appendChild(front);
+    overlay.appendChild(back);
+    view.appendChild(overlay);
+
+    changeFn();
+
+    const finish = ()=>{ if(overlay.parentNode) overlay.remove(); flipping = false; };
+    overlay.getBoundingClientRect(); // force layout so the 0deg start state is registered before animating
+    overlay.classList.add('flipping');
+    overlay.style.transform = `rotateY(${direction==='next' ? -180 : 180}deg)`;
+    overlay.addEventListener('transitionend', finish, {once:true});
+    setTimeout(finish, 800);
+  };
+}
+
+const mainPager = makePager(document.getElementById('stage-canvas'), document.getElementById('slide-view'), currentViewPages);
+document.getElementById('nav-prev').addEventListener('click', ()=> mainPager('prev', goPrevView));
+document.getElementById('nav-next').addEventListener('click', ()=> mainPager('next', goNextView));
+
+/* ---------- read-only "plancha" preview modal ----------
+   Shows one full cuadernillo's plancha at a time: EVERY sheet that belongs to
+   it (not capped at 2 like the sidebar's ISO-ratio-preserving thumbnails —
+   that cap is only needed there because the sidebar has to keep a clean
+   rectangle shape at a glance; this modal can zoom/scroll, so it just shows
+   the whole thing), front row on top and back row below, real content, no
+   page-number badges (those are a sidebar-only editing aid, never drawn on
+   the canvas). Left/right move between cuadernillos. previewCuadernillo is
+   independent of state.currentIndex, so browsing it never disturbs the page
+   selected in the editor underneath. */
+let previewCuadernillo = 1;
+function cuadernilloSheets(k){ return buildSheets().filter(s=> s.signature===k); }
+function totalCuadernillos(){ return Math.round(state.pageCount/state.signatureSize); }
+function renderPlanchaPreview(canvas, sheets){
+  const {w,h} = pageMm();
+  const ctx = canvas.getContext('2d');
+  const cols = sheets.length*2;
+  canvas.width = Math.round(w*PREVIEW_PPMM)*cols;
+  canvas.height = Math.round(h*PREVIEW_PPMM)*2;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const row1 = [], row2 = [];
+  sheets.forEach(sh=>{ row1.push(sh.front.left, sh.front.right); });
+  sheets.forEach(sh=>{ row2.push(sh.back.left, sh.back.right); });
+  row1.forEach((pageNum,i)=> drawPageContent(ctx, state.pages[pageNum-1], i*w*PREVIEW_PPMM, 0, w, h, PREVIEW_PPMM, false));
+  row2.forEach((pageNum,i)=> drawPageContent(ctx, state.pages[pageNum-1], i*w*PREVIEW_PPMM, h*PREVIEW_PPMM, w, h, PREVIEW_PPMM, false));
+}
+let previewZoom = 1, previewPanX = 0, previewPanY = 0;
+function applyPreviewTransform(){
+  const canvas = document.getElementById('preview-canvas');
+  canvas.style.transform = `translate(${previewPanX}px, ${previewPanY}px) scale(${previewZoom})`;
+  canvas.style.cursor = previewZoom>1 ? 'grab' : 'default';
+}
+function resetPreviewZoom(){ previewZoom=1; previewPanX=0; previewPanY=0; applyPreviewTransform(); }
+function renderPreviewStage(){
+  const canvas = document.getElementById('preview-canvas');
+  const total = totalCuadernillos();
+  previewCuadernillo = Math.max(1, Math.min(previewCuadernillo, total));
+  const sheets = cuadernilloSheets(previewCuadernillo);
+  document.getElementById('preview-nav-prev').disabled = previewCuadernillo<=1;
+  document.getElementById('preview-nav-next').disabled = previewCuadernillo>=total;
+  renderPlanchaPreview(canvas, sheets);
+  document.getElementById('preview-label').textContent =
+    `Cuadernillo ${previewCuadernillo}/${total} — ${sheets.length} hoja${sheets.length>1?'s':''}`;
+  resetPreviewZoom();
+}
+function previewGoPrev(){ if(previewCuadernillo>1){ previewCuadernillo--; renderPreviewStage(); } }
+function previewGoNext(){ if(previewCuadernillo<totalCuadernillos()){ previewCuadernillo++; renderPreviewStage(); } }
+
+/* Flips the whole plancha (every row/column together, not a single leaf —
+   there's no book-style spine here, just one full sheet of cuadernillo
+   content replacing another) 180° over its own center to reveal the next
+   or previous cuadernillo, mirroring the same page-turn feel used elsewhere
+   in the app (makePager) but for a rigid whole-canvas swap instead of a
+   book leaf hinged at a spine. */
+function makeCardFlipper(canvas, view){
+  let flipping = false;
+  return function flipCard(direction, changeFn){
+    if(flipping || canvas.width===0){ changeFn(); return; }
+    const rect = canvas.getBoundingClientRect();
+    const viewRect = view.getBoundingClientRect();
+    if(rect.width===0){ changeFn(); return; }
+    const off = document.createElement('canvas');
+    off.width = canvas.width; off.height = canvas.height;
+    off.getContext('2d').drawImage(canvas, 0, 0);
+    const snapshot = off.toDataURL('image/png');
+    flipping = true;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'flip-overlay';
+    overlay.style.left = (rect.left-viewRect.left)+'px';
+    overlay.style.top = (rect.top-viewRect.top)+'px';
+    overlay.style.width = rect.width+'px';
+    overlay.style.height = rect.height+'px';
+    overlay.style.transformOrigin = direction==='next' ? 'left center' : 'right center';
+
+    const front = document.createElement('div');
+    front.className = 'flip-face flip-front';
+    const img = document.createElement('img');
+    img.src = snapshot;
+    front.appendChild(img);
+    const back = document.createElement('div');
+    back.className = 'flip-face flip-back';
+    overlay.appendChild(front);
+    overlay.appendChild(back);
+    view.appendChild(overlay);
+
+    changeFn();
+
+    const finish = ()=>{ if(overlay.parentNode) overlay.remove(); flipping = false; };
+    overlay.getBoundingClientRect();
+    overlay.classList.add('flipping');
+    overlay.style.transform = `rotateY(${direction==='next' ? -180 : 180}deg)`;
+    overlay.addEventListener('transitionend', finish, {once:true});
+    setTimeout(finish, 800);
+  };
+}
+const previewCardFlip = makeCardFlipper(document.getElementById('preview-canvas'), document.getElementById('preview-stage'));
+document.getElementById('preview-nav-prev').addEventListener('click', ()=>{ resetPreviewZoom(); previewCardFlip('prev', previewGoPrev); });
+document.getElementById('preview-nav-next').addEventListener('click', ()=>{ resetPreviewZoom(); previewCardFlip('next', previewGoNext); });
+
+(function initPreviewZoomPan(){
+  const stage = document.getElementById('preview-stage');
+  stage.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const factor = e.deltaY<0 ? 1.15 : 1/1.15;
+    previewZoom = Math.max(1, Math.min(6, previewZoom*factor));
+    if(previewZoom===1){ previewPanX=0; previewPanY=0; }
+    applyPreviewTransform();
+  }, {passive:false});
+  let dragging=false, lastX=0, lastY=0;
+  stage.addEventListener('pointerdown', e=>{
+    if(previewZoom<=1) return;
+    dragging=true; lastX=e.clientX; lastY=e.clientY;
+    document.getElementById('preview-canvas').style.cursor='grabbing';
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    previewPanX += e.clientX-lastX; previewPanY += e.clientY-lastY;
+    lastX=e.clientX; lastY=e.clientY;
+    applyPreviewTransform();
+  });
+  const endDrag = ()=>{ if(dragging){ dragging=false; applyPreviewTransform(); } };
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointerleave', endDrag);
+})();
+
+function isPreviewOpen(){ return document.getElementById('preview-modal').getAttribute('aria-hidden')==='false'; }
+function openPreviewModal(){
+  const info = findSheetForPage(state.currentIndex+1);
+  previewCuadernillo = info ? info.sheet.signature : 1;
+  document.getElementById('preview-modal').setAttribute('aria-hidden','false');
+  renderPreviewStage();
+}
+function closePreviewModal(){ document.getElementById('preview-modal').setAttribute('aria-hidden','true'); }
+
+document.getElementById('preview-open-btn').addEventListener('click', openPreviewModal);
+document.getElementById('preview-close').addEventListener('click', closePreviewModal);
+
+document.addEventListener('keydown', e=>{
+  if(isPreviewOpen()){
+    if(e.key==='Escape'){ closePreviewModal(); return; }
+    if(e.key==='ArrowLeft'){ resetPreviewZoom(); previewCardFlip('prev', previewGoPrev); return; }
+    if(e.key==='ArrowRight'){ resetPreviewZoom(); previewCardFlip('next', previewGoNext); return; }
+    return;
+  }
+  if(e.key!=='ArrowLeft' && e.key!=='ArrowRight') return;
+  const tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
+  if(tag==='input' || tag==='textarea' || tag==='select') return;
+  if(!document.getElementById('color-popover').hidden) return;
+  if(e.key==='ArrowLeft') mainPager('prev', goPrevView);
+  else mainPager('next', goNextView);
+});
+
+(function initDropUpload(){
+  const view = document.getElementById('slide-view');
+  let dragCounter = 0;
+  view.addEventListener('dragenter', e=>{
+    if(!e.dataTransfer.types.includes('Files')) return;
+    e.preventDefault(); dragCounter++;
+    view.classList.add('drag-over');
+  });
+  view.addEventListener('dragover', e=>{
+    if(!e.dataTransfer.types.includes('Files')) return;
+    e.preventDefault();
+  });
+  view.addEventListener('dragleave', ()=>{
+    dragCounter = Math.max(0,dragCounter-1);
+    if(dragCounter===0) view.classList.remove('drag-over');
+  });
+  view.addEventListener('drop', e=>{
+    e.preventDefault();
+    dragCounter = 0;
+    view.classList.remove('drag-over');
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if(!file) return;
+    const pageIdx = pageIndexAtClientX(document.getElementById('stage-canvas'), e.clientX);
+    state.currentIndex = pageIdx;
+    handleImageFile(file, state.pages[pageIdx]);
+  });
+})();
+
+/* ---------- color popover ---------- */
+let cpState = {h:0,s:0,v:0};
+let cpTarget = null;
+let pickingColor = false;
+
+function drawSV(){
+  const c = document.getElementById('cp-sv');
+  const ctx = c.getContext('2d');
+  const [r,g,b] = hsvToRgb(cpState.h,1,1);
+  ctx.fillStyle = `rgb(${r},${g},${b})`;
+  ctx.fillRect(0,0,c.width,c.height);
+  let grad = ctx.createLinearGradient(0,0,c.width,0);
+  grad.addColorStop(0,'rgba(255,255,255,1)'); grad.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,c.width,c.height);
+  grad = ctx.createLinearGradient(0,0,0,c.height);
+  grad.addColorStop(0,'rgba(0,0,0,0)'); grad.addColorStop(1,'rgba(0,0,0,1)');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,c.width,c.height);
+  const cx = cpState.s*c.width, cy=(1-cpState.v)*c.height;
+  ctx.beginPath(); ctx.arc(cx,cy,5,0,Math.PI*2);
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+  ctx.strokeStyle='rgba(0,0,0,.5)'; ctx.lineWidth=1; ctx.stroke();
+}
+function drawHue(){
+  const c = document.getElementById('cp-hue');
+  const ctx = c.getContext('2d');
+  const grad = ctx.createLinearGradient(0,0,c.width,0);
+  for(let i=0;i<=6;i++){ const [r,g,b]=hsvToRgb(i*60,1,1); grad.addColorStop(i/6, `rgb(${r},${g},${b})`); }
+  ctx.fillStyle=grad; ctx.fillRect(0,0,c.width,c.height);
+  const x = (cpState.h/360)*c.width;
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,c.height); ctx.stroke();
+}
+function updateFromHSV(){
+  const [r,g,b] = hsvToRgb(cpState.h,cpState.s,cpState.v);
+  const hex = rgbToHex(r,g,b);
+  document.getElementById('cp-hex').value = hex;
+  if(cpTarget) cpTarget(hex);
+}
+function openColorPicker(anchor, initialHex, onChange){
+  cpTarget = onChange;
+  const [r,g,b] = hexToRgb(initialHex);
+  const [h,s,v] = rgbToHsv(r,g,b);
+  cpState = {h,s,v};
+  const pop = document.getElementById('color-popover');
+  pop.hidden = false;
+  const rect = anchor.getBoundingClientRect();
+  let left = rect.left, top = rect.bottom+6;
+  if(left+210>window.innerWidth) left = window.innerWidth-216;
+  if(top+220>window.innerHeight) top = rect.top-226;
+  pop.style.left = left+'px'; pop.style.top = top+'px';
+  document.getElementById('cp-hex').value = initialHex;
+  drawSV(); drawHue();
+}
+function closeColorPicker(){
+  document.getElementById('color-popover').hidden = true;
+  cpTarget = null; pickingColor = false;
+  const eyedrop = document.getElementById('cp-eyedrop');
+  eyedrop.classList.remove('active');
+  eyedrop.title = 'Cuentagotas: tomar color de la imagen';
+}
+(function initColorPicker(){
+  const sv = document.getElementById('cp-sv'), hue = document.getElementById('cp-hue');
+  let svDrag=false, hueDrag=false;
+  function svPick(e){
+    const rect = sv.getBoundingClientRect();
+    const x = Math.min(rect.width,Math.max(0,e.clientX-rect.left));
+    const y = Math.min(rect.height,Math.max(0,e.clientY-rect.top));
+    cpState.s = x/rect.width; cpState.v = 1-y/rect.height;
+    drawSV(); updateFromHSV();
+  }
+  function huePick(e){
+    const rect = hue.getBoundingClientRect();
+    const x = Math.min(rect.width,Math.max(0,e.clientX-rect.left));
+    cpState.h = (x/rect.width)*360;
+    drawSV(); drawHue(); updateFromHSV();
+  }
+  sv.addEventListener('pointerdown', e=>{ svDrag=true; svPick(e); });
+  window.addEventListener('pointermove', e=>{ if(svDrag) svPick(e); if(hueDrag) huePick(e); });
+  window.addEventListener('pointerup', ()=>{ svDrag=false; hueDrag=false; });
+  hue.addEventListener('pointerdown', e=>{ hueDrag=true; huePick(e); });
+
+  document.getElementById('cp-hex').addEventListener('change', e=>{
+    let hex = e.target.value.trim();
+    if(!hex.startsWith('#')) hex='#'+hex;
+    const [r,g,b] = hexToRgb(hex);
+    const [h,s,v] = rgbToHsv(r,g,b);
+    cpState={h,s,v};
+    drawSV(); drawHue();
+    if(cpTarget) cpTarget(rgbToHex(r,g,b));
+  });
+
+  document.getElementById('cp-eyedrop').addEventListener('click', function(){
+    pickingColor = !pickingColor;
+    this.classList.toggle('active', pickingColor);
+    this.title = pickingColor ? 'Cancelar cuentagotas' : 'Cuentagotas: tomar color de la imagen';
+  });
+  document.getElementById('cp-close').addEventListener('click', closeColorPicker);
+
+  document.getElementById('stage-canvas').addEventListener('click', function(e){
+    if(!pickingColor) return;
+    const canvas = this;
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width/rect.width, sy = canvas.height/rect.height;
+    const px = Math.floor((e.clientX-rect.left)*sx), py = Math.floor((e.clientY-rect.top)*sy);
+    const ctx = canvas.getContext('2d');
+    const data = ctx.getImageData(px,py,1,1).data;
+    const hex = rgbToHex(data[0],data[1],data[2]);
+    const [h,s,v] = rgbToHsv(data[0],data[1],data[2]);
+    cpState={h,s,v};
+    document.getElementById('cp-hex').value = hex;
+    drawSV(); drawHue();
+    if(cpTarget) cpTarget(hex);
+    pickingColor = false;
+    const eyedrop = document.getElementById('cp-eyedrop');
+    eyedrop.classList.remove('active');
+    eyedrop.title = 'Cuentagotas: tomar color de la imagen';
+  });
+
+  document.addEventListener('pointerdown', e=>{
+    const pop = document.getElementById('color-popover');
+    if(pop.hidden) return;
+    if(pop.contains(e.target)) return;
+    if(e.target.classList && e.target.classList.contains('color-swatch')) return;
+    closeColorPicker();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeColorPicker(); });
+})();
+
+/* ---------- confirm modal ---------- */
+function confirmDialog(title, msg){
+  return new Promise(resolve=>{
+    const modal = document.getElementById('confirm-modal');
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-msg').textContent = msg;
+    modal.setAttribute('aria-hidden','false');
+    const ok = document.getElementById('confirm-ok'), cancel = document.getElementById('confirm-cancel');
+    function cleanup(v){ modal.setAttribute('aria-hidden','true'); ok.removeEventListener('click',onOk); cancel.removeEventListener('click',onCancel); resolve(v); }
+    function onOk(){ cleanup(true); } function onCancel(){ cleanup(false); }
+    ok.addEventListener('click',onOk); cancel.addEventListener('click',onCancel);
+  });
+}
+
+/* ---------- toast ---------- */
+let toastTimer=null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 3200);
+}
+
+/* ---------- header controls ---------- */
+document.getElementById('sheet-toggle').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  state.sheetSize = btn.dataset.val;
+  document.querySelectorAll('#sheet-toggle button').forEach(b=>b.classList.toggle('active', b===btn));
+  renderAll(); save();
+});
+document.getElementById('sig-toggle').addEventListener('click', async e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  const newSig = +btn.dataset.val;
+  const newCount = Math.ceil(state.pageCount/newSig)*newSig;
+  if(newCount !== state.pageCount){
+    const ok = await confirmDialog('Cambiar cuadernillo', `Con ${newSig} páginas por cuadernillo, el total pasa de ${state.pageCount} a ${newCount} páginas (se agregan en blanco al final). ¿Continuar?`);
+    if(!ok) return;
+  }
+  state.signatureSize = newSig;
+  state.pageCount = newCount;
+  document.getElementById('pagecount-input').value = newCount;
+  ensurePages();
+  document.querySelectorAll('#sig-toggle button').forEach(b=>b.classList.toggle('active', b===btn));
+  renderAll(); save();
+});
+document.getElementById('apply-pagecount').addEventListener('click', async ()=>{
+  const raw = Math.max(4, +document.getElementById('pagecount-input').value || state.pageCount);
+  const rounded = Math.ceil(raw/state.signatureSize)*state.signatureSize;
+  if(rounded < state.pages.length){
+    const hasContent = state.pages.slice(rounded).some(p=>!pageIsEmpty(p));
+    if(hasContent){
+      const ok = await confirmDialog('Reducir páginas', `Vas a bajar a ${rounded} páginas. Algunas páginas con contenido después de esa posición se van a perder. ¿Continuar?`);
+      if(!ok){ document.getElementById('pagecount-input').value = state.pageCount; return; }
+    }
+  }
+  const added = rounded - state.pageCount;
+  state.pageCount = rounded;
+  ensurePages();
+  if(state.currentIndex >= state.pageCount) state.currentIndex = state.pageCount-1;
+  document.getElementById('pagecount-input').value = rounded;
+  if(added>0) showToast(`Se agregaron ${added} página(s) en blanco para completar el cuadernillo.`);
+  renderAll(); save();
+});
+
+document.getElementById('clear-btn').addEventListener('click', async ()=>{
+  const ok = await confirmDialog('Empezar de nuevo', 'Se va a borrar todo el proyecto actual. ¿Confirmás?');
+  if(!ok) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = {sheetSize:'A4', signatureSize:4, pageCount:20, currentIndex:0, reverseStack:false, customFonts:[], pages:[]};
+  ensurePages();
+  syncHeaderUI();
+  renderAll(); save();
+});
+
+function syncHeaderUI(){
+  document.querySelectorAll('#sheet-toggle button').forEach(b=> b.classList.toggle('active', b.dataset.val===state.sheetSize));
+  document.querySelectorAll('#sig-toggle button').forEach(b=> b.classList.toggle('active', +b.dataset.val===state.signatureSize));
+  document.getElementById('pagecount-input').value = state.pageCount;
+}
+
+/* ---------- howto modal ---------- */
+document.getElementById('howto-btn').addEventListener('click', ()=>{
+  const sheets = buildSheets();
+  const sigCount = sheets.length? sheets[sheets.length-1].signature : 0;
+  const body = `Tu librito tiene ${sigCount} cuadernillo(s) de ${state.signatureSize} páginas cada uno, en hojas ${state.sheetSize}.
+
+1. Imprimí todas las hojas (frente y dorso, doble faz).
+2. Separá las hojas por cuadernillo y, dentro de cada cuadernillo, ordenalas por número de hoja.
+3. Anidá las hojas de cada cuadernillo, una dentro de la otra, en orden.
+4. Doblá cada cuadernillo al medio por la línea punteada del modo Imposición.
+5. Metelos uno dentro del otro en orden de cuadernillo (1 adentro de 2, etc. si tu encuadernación los anida; si no, apilalos en orden).
+6. Cosé o grampeá por el lomo, atravesando todas las hojas juntas.
+7. Recortá el borde abierto si hace falta para prolijar.`;
+  document.getElementById('howto-body').textContent = body;
+  document.getElementById('howto-modal').setAttribute('aria-hidden','false');
+});
+document.getElementById('howto-close').addEventListener('click', ()=> document.getElementById('howto-modal').setAttribute('aria-hidden','true'));
+
+/* ---------- export ---------- */
+document.getElementById('export-btn').addEventListener('click', e=>{
+  const menu = document.getElementById('export-menu');
+  menu.hidden = !menu.hidden;
+  const rect = e.target.getBoundingClientRect();
+  menu.style.left = Math.min(window.innerWidth-270, rect.left)+'px';
+  menu.style.top = rect.bottom+8+'px';
+  document.getElementById('reverse-stack').checked = state.reverseStack;
+});
+document.addEventListener('pointerdown', e=>{
+  const menu = document.getElementById('export-menu');
+  if(menu.hidden) return;
+  if(menu.contains(e.target) || e.target.id==='export-btn') return;
+  menu.hidden = true;
+});
+
+document.getElementById('page-settings-btn').addEventListener('click', function(){
+  const menu = document.getElementById('page-settings-menu');
+  menu.hidden = !menu.hidden;
+  const rect = this.getBoundingClientRect();
+  menu.style.left = Math.min(window.innerWidth-240, rect.left)+'px';
+  menu.style.top = rect.bottom+8+'px';
+});
+document.addEventListener('pointerdown', e=>{
+  const menu = document.getElementById('page-settings-menu');
+  if(menu.hidden) return;
+  if(menu.contains(e.target) || e.target.closest('#page-settings-btn')) return;
+  menu.hidden = true;
+});
+document.getElementById('reverse-stack').addEventListener('change', e=>{ state.reverseStack = e.target.checked; save(); });
+
+function renderSheetOffscreen(sheet, side){
+  const {w,h} = sheetMm();
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(w*EXPORT_PPMM);
+  canvas.height = Math.round(h*EXPORT_PPMM);
+  const ctx = canvas.getContext('2d');
+  const pageW = pageMm().w, pageH = pageMm().h;
+  const leftNum = sheet[side].left, rightNum = sheet[side].right;
+  drawPageContent(ctx, state.pages[leftNum-1], 0, 0, pageW, pageH, EXPORT_PPMM);
+  drawPageContent(ctx, state.pages[rightNum-1], pageW*EXPORT_PPMM, 0, pageW, pageH, EXPORT_PPMM);
+  return canvas;
+}
+
+async function exportPdf(mode){
+  if(!window.jspdf){ showToast('No se pudo cargar la librería de PDF (revisá tu conexión a internet).'); return; }
+  const missing = [];
+  imageCache.forEach(()=>{});
+  const { jsPDF } = window.jspdf;
+  const { w, h } = sheetMm();
+  const sheets = buildSheets();
+  if(sheets.length===0){ showToast('No hay hojas para exportar.'); return; }
+  const doc = new jsPDF({ unit:'mm', format:[w,h], orientation:'landscape' });
+  function addSheetPage(sheet, side, first){
+    const canvas = renderSheetOffscreen(sheet, side);
+    const data = canvas.toDataURL('image/jpeg', 0.93);
+    if(!first) doc.addPage([w,h], 'landscape');
+    doc.addImage(data, 'JPEG', 0, 0, w, h);
+  }
+  let first = true;
+  if(mode==='auto'){
+    for(const sheet of sheets){
+      addSheetPage(sheet, 'front', first); first=false;
+      addSheetPage(sheet, 'back', false);
+    }
+  } else {
+    for(const sheet of sheets){ addSheetPage(sheet, 'front', first); first=false; }
+    const backOrder = state.reverseStack ? [...sheets].reverse() : sheets;
+    for(const sheet of backOrder){ addSheetPage(sheet, 'back', false); }
+  }
+  doc.save(mode==='auto' ? 'libreto-duplex-auto.pdf' : 'libreto-manual.pdf');
+  document.getElementById('export-menu').hidden = true;
+}
+document.getElementById('export-auto').addEventListener('click', ()=> exportPdf('auto'));
+document.getElementById('export-manual').addEventListener('click', ()=> exportPdf('manual'));
+
+/* ---------- persistence ---------- */
+let saveTimer=null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(err){ showToast('No se pudo autoguardar (¿demasiadas imágenes grandes?).'); }
+  }, 400);
+}
+function loadAllImages(cb){
+  const srcs = new Set();
+  state.pages.forEach(p=>{ if(p.image && p.image.src) srcs.add(p.image.src); });
+  let pending = srcs.size;
+  if(pending===0){ cb(); return; }
+  srcs.forEach(src=> preloadImage(src, ()=>{ pending--; if(pending<=0) cb(); }));
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      state = Object.assign(state, parsed);
+    }
+  }catch(err){ /* ignore corrupt storage */ }
+  if(!state.customFonts) state.customFonts = [];
+  ensurePages();
+}
+
+/* ---------- custom fonts ----------
+   Uploaded font files are stored as data URLs in state.customFonts so they
+   survive reload/export — the CSS Font Loading API registration itself
+   (document.fonts) is per-session and has to be redone every load. */
+async function registerCustomFonts(){
+  for(const cf of state.customFonts){
+    if(FONTS.some(f=> f.id===cf.id)) continue;
+    try{
+      const face = new FontFace(cf.id, `url(${cf.dataUrl})`);
+      await face.load();
+      document.fonts.add(face);
+      FONTS.push({id: cf.id, label: cf.label, css: `'${cf.id}'`});
+    }catch(err){ /* skip a font that fails to parse/load */ }
+  }
+}
+function handleFontFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async ()=>{
+    const dataUrl = reader.result;
+    const id = 'custom-' + Date.now();
+    const label = file.name.replace(/\.[^.]+$/, '');
+    try{
+      const face = new FontFace(id, `url(${dataUrl})`);
+      await face.load();
+      document.fonts.add(face);
+      state.customFonts.push({id, label, dataUrl});
+      FONTS.push({id, label, css: `'${id}'`});
+      renderEditPanel();
+      save();
+    }catch(err){ showToast('No se pudo cargar esa fuente.'); }
+  };
+  reader.readAsDataURL(file);
+}
+document.getElementById('font-file-input').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  e.target.value = '';
+  handleFontFile(file);
+});
+
+/* ---------- save/load project file (.kyro) ----------
+   Same shape as the localStorage autosave (image data URLs, text, layout,
+   custom fonts included) — a portable backup/handoff file, not tied to one
+   browser's storage. */
+function exportProjectFile(){
+  const blob = new Blob([JSON.stringify(state)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'proyecto.kyro';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+function importProjectFile(file){
+  const reader = new FileReader();
+  reader.onload = async ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      state = Object.assign({sheetSize:'A4', signatureSize:4, pageCount:20, currentIndex:0, reverseStack:false, customFonts:[], pages:[]}, parsed);
+      if(!state.customFonts) state.customFonts = [];
+      ensurePages();
+      syncHeaderUI();
+      await registerCustomFonts();
+      loadAllImages(()=>{ renderAll(); save(); });
+    }catch(err){ showToast('No se pudo abrir ese archivo — ¿es un proyecto .kyro válido?'); }
+  };
+  reader.readAsText(file);
+}
+document.getElementById('save-project-btn').addEventListener('click', exportProjectFile);
+document.getElementById('load-project-btn').addEventListener('click', ()=> document.getElementById('project-file-input').click());
+document.getElementById('project-file-input').addEventListener('change', async e=>{
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  const ok = await confirmDialog('Cargar proyecto', 'Esto va a reemplazar el proyecto actual. ¿Continuar?');
+  if(!ok) return;
+  importProjectFile(file);
+});
+
+/* ---------- render all ---------- */
+function renderAll(){
+  ensurePages();
+  renderSidebar();
+  renderEditPanel();
+  renderStage();
+}
+
+/* ---------- init ---------- */
+load();
+syncHeaderUI();
+registerCustomFonts().then(()=> loadAllImages(()=> renderAll()));
+})();
+</script>
+</body>
+</html>
