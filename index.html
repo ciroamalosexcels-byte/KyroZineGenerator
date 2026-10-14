@@ -304,14 +304,12 @@ select.plain-select{padding:.45rem 2.6rem .45rem 1rem;border:none;border-radius:
     radial-gradient(circle var(--r) at var(--sx) 0,#0000 97%,#000),radial-gradient(circle var(--r) at var(--sx) 100%,#0000 97%,#000);
   mask-composite:intersect}
 .ticket-body::before{content:"";position:absolute;left:var(--sx);top:14px;bottom:14px;width:0;border-left:3px dashed var(--text);opacity:.55;transform:translateX(-1.5px)}
-.ticket-main{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.35rem;padding:.7rem .9rem .7rem 1.2rem;text-align:center}
-.ticket-main small{font-weight:800;font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text);opacity:.7}
-.ticket-main .collab-code{font-size:1.55rem;letter-spacing:.1em;line-height:1.1;white-space:nowrap}
-.ticket-line{display:flex;align-items:center;gap:.5rem;width:100%;font-weight:800;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase}
-.ticket-line::before,.ticket-line::after{content:"";flex:1;border-top:2px solid var(--text);opacity:.55}
-.ticket-stub{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;padding:.6rem .5rem .6rem .8rem}
-.ticket-stub b{font-size:2.1rem;line-height:1;font-weight:900}
-.ticket-stub span{font-size:.58rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;writing-mode:horizontal-tb}
+.ticket-main{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.55rem;padding:.8rem .9rem .8rem 1.2rem}
+.ticket-main .collab-code{font-size:1.7rem;letter-spacing:.1em;line-height:1.1;white-space:nowrap}
+.ticket-rule{width:64%;border-top:3px solid var(--text);opacity:.6;border-radius:2px}
+.ticket-stub{display:flex;align-items:center;justify-content:center;padding:.6rem .3rem .6rem .5rem;min-width:0}
+.ticket-vert{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:900;font-size:.95rem;letter-spacing:.1em;text-transform:uppercase;
+  max-height:86px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .collab-code{font-family:'Courier Prime',monospace;font-weight:700;font-size:1.9rem;letter-spacing:.16em;line-height:1.1}
 #collab-peers{display:flex;flex-wrap:wrap;gap:.45rem}
 .collab-peer{display:inline-flex;align-items:center;gap:.45rem;padding:.3rem .7rem .3rem .4rem;border-radius:999px;background:var(--bg);font-weight:700;font-size:.88rem;max-width:100%}
@@ -789,11 +787,10 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
     <div class="ticket">
       <div class="ticket-body">
         <div class="ticket-main">
-          <small>Kyro Zine · Sala</small>
           <div class="collab-code" id="collab-code-label"></div>
-          <div class="ticket-line">Admit one</div>
+          <div class="ticket-rule"></div>
         </div>
-        <div class="ticket-stub"><b id="ticket-count">1</b><span id="ticket-label">en sala</span></div>
+        <div class="ticket-stub"><span class="ticket-vert" id="ticket-project"></span></div>
       </div>
     </div>
     <div class="collab-field">
@@ -812,6 +809,7 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
   <div class="ps-head">
     <span class="ps-main">Ajustes</span>
     <div class="ps-head-actions">
+      <button type="button" class="ib" id="voice-btn" aria-label="Robot" data-icon="bot" data-size="18"></button>
       <button type="button" class="ib" id="about-btn" title="Acerca de" aria-label="Acerca de" data-icon="info" data-size="18"></button>
       <button type="button" class="modal-close" id="page-settings-close" title="Cerrar" aria-label="Cerrar ajustes" data-icon="x" data-size="18"></button>
     </div>
@@ -821,17 +819,6 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
     <div class="theme-toggle" id="theme-toggle">
       <button type="button" data-theme="light" class="active">Claro</button>
       <button type="button" data-theme="dark">Oscuro</button>
-    </div>
-  </div>
-  <div class="ps-block">
-    <span class="ps-title">Voz robótica</span>
-    <div class="theme-toggle" id="voice-toggle">
-      <button type="button" data-v="off" class="active">Apagada</button>
-      <button type="button" data-v="on">Encendida</button>
-    </div>
-    <div class="theme-toggle" id="voice-engine">
-      <button type="button" data-e="sam" class="active">Retro (SAM)</button>
-      <button type="button" data-e="system">Voz del sistema</button>
     </div>
   </div>
   <div class="ps-block">
@@ -1771,6 +1758,7 @@ const ICONS = {
   'clipboard-paste':'<path d="M15 2H9a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1Z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M16 4h2a2 2 0 0 1 2 2v4"/><path d="M21 14H11"/><path d="m15 10-4 4 4 4"/>',
   'layers':'<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
   'users':'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  'bot':'<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
   'eye-off':'<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
   'arrow-up':'<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
   'arrow-down':'<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
@@ -6712,9 +6700,7 @@ function collabRenderPanel(){
   if(!collab.on) return;
   const isDirect = collab.code==='DIRECTO';
   document.getElementById('collab-code-label').textContent = isDirect ? 'DIRECTA' : collab.code;
-  const nPeople = Math.max(1, Object.keys(collab.peers).length);
-  document.getElementById('ticket-count').textContent = String(nPeople);
-  document.getElementById('ticket-label').textContent = nPeople===1 ? 'persona' : 'personas';
+  document.getElementById('ticket-project').textContent = String(projectName||'proyecto').replace(/\.kyro$/i, '');
   document.getElementById('collab-copy').hidden = isDirect;
   document.getElementById('collab-invite').hidden = !(isDirect && window.direct && direct.role==='host');
   const peers = collab.peers;
@@ -6731,6 +6717,7 @@ function collabRenderPanel(){
   try{ document.getElementById('collab-name').value = localStorage.getItem('kyro-collab-name') || ''; }catch(err){}
   const open = ()=>{
     panel.hidden = false;
+    collabRenderPanel();
     const r = btn.getBoundingClientRect(), w = panel.offsetWidth;
     /* its right edge lines up with the button, and it never leaves the window */
     panel.style.left = Math.max(8, Math.min(window.innerWidth-w-8, r.right-w))+'px';
@@ -6835,83 +6822,104 @@ document.addEventListener('keydown', e=>{
   document.addEventListener('scroll', hide, true);
   document.addEventListener('pointerout', e=>{ if(!e.relatedTarget) hide(); });
 })();
-/* robotic voice: says the name of whatever button the pointer lands on, with
-   the browser's own speech synthesis (the voices depend on the system) */
+/* robotic voice: says the name of whatever button the pointer lands on.
+   One engine only: SAM (the 1982 Commodore 64 synthesiser, as a JavaScript
+   port). SAM reads English, so every label is first rewritten as phonemes of
+   Spanish as spoken in the River Plate (ll/y as "sh", s kept, r flapped), and
+   SAM is fed those phonemes directly. The phonetic text is never shown. */
 (function initVoice(){
-  const synth = window.speechSynthesis;
   const SAM_LIB = 'https://cdn.jsdelivr.net/npm/sam-js@0.3.1/dist/samjs.min.js';
-  let on = false, last = '', lastT = 0, voice = null, engine = 'sam', samReady = false, samNow = null;
-  try{
-    on = localStorage.getItem('kyro-voice')==='1';
-    engine = localStorage.getItem('kyro-voice-engine')==='system' ? 'system' : 'sam';
-  }catch(err){}
-  /* SAM, the 1982 Commodore 64 synthesiser (a JavaScript port): monotone and
-     metallic, the nearest free relative of the voice on "Fitter Happier" */
-  const loadSam = ()=> loadScriptOnce(SAM_LIB, ()=> typeof window.SamJs==='function').then(()=>{ samReady = true; }).catch(()=>{ samReady = false; });
-  const samSpeak = text=>{
-    if(!samReady || typeof window.SamJs!=='function') return false;
-    try{
-      if(samNow && samNow.abort) samNow.abort('next');
-      const sam = new window.SamJs({speed:70, pitch:60, throat:128, mouth:128});
-      samNow = sam.speak(text);
-      if(samNow && samNow.catch) samNow.catch(()=>{});
-      return true;
-    }catch(err){ return false; }
+  let on = false, ready = false, last = '', lastT = 0, current = null;
+  try{ on = localStorage.getItem('kyro-voice')==='1'; }catch(err){}
+
+  /* words that do not follow Spanish spelling (or are spelled out letter by letter) */
+  const SAY = {
+    pdf:'PEH DEH EHFEH', dpi:'DEH PEH IY', qr:'KUW EHRREH', lan:'LAAN', ctrl:'KOWNTROWL', zine:'ZIYN',
+    kyro:'KIYDXOW', ia:'IYAA', 'k':'KAA', 'b':'BEH', 'c':'SEH', 'd':'DEH', 'v':'BEH', 'r':'EHRREH',
+    's':'EHSEH', 't':'TEH', 'e':'EH', 'z':'SEHTAA', 'm':'EHMEH', 'h':'AACHEH', 'x':'EHKIYS'
   };
-  const paint = ()=>{
-    document.querySelectorAll('#voice-toggle button').forEach(b=> b.classList.toggle('active', (b.dataset.v==='on')===on));
-    document.querySelectorAll('#voice-engine button').forEach(b=> b.classList.toggle('active', b.dataset.e===engine));
-  };
-  const pick = ()=>{
-    const list = synth ? synth.getVoices() : [];
-    const es = list.filter(v=> /^es/i.test(v.lang));
-    voice = es.find(v=> /jorge|diego|juan|pablo|raul|carlos|male|hombre/i.test(v.name)) || es[0] || null;
-  };
-  if(synth){ pick(); synth.addEventListener && synth.addEventListener('voiceschanged', pick); }
-  window.kyroSpeak = (text, force)=>{
-    if(!(on || force)) return;
-    if(engine!=='sam' && !synth) return;
-    const clean = String(text).replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
-    const now = performance.now();
-    if(!clean || (clean===last && now-lastT<900)) return;
-    last = clean; lastT = now;
-    if(engine==='sam'){
-      if(synth) synth.cancel();
-      if(samSpeak(clean)) return;
-      if(!samReady){ loadSam().then(()=>{ if(samReady) samSpeak(clean); }); return; }
+  const V = {a:'AA', e:'EH', i:'IY', o:'OH', u:'UW'};
+  const vowel = c=> 'aeiouáéíóúü'.indexOf(c) >= 0;
+  const plain = c=> ({'á':'a','é':'e','í':'i','ó':'o','ú':'u','ü':'u'})[c] || c;
+
+  function wordToPhonemes(w){
+    if(SAY[w]) return SAY[w];
+    let out = '';
+    const n = w.length;
+    for(let i=0;i<n;i++){
+      const c = w[i], p = i ? w[i-1] : '', nx = i+1<n ? w[i+1] : '', pl = plain(nx);
+      if(vowel(c)){
+        if(c==='u' && (p==='g' || p==='q') && (pl==='e' || pl==='i') && nx!=='ü') continue;  // gue, gui, que, qui
+        out += V[plain(c)];
+        continue;
+      }
+      if(c==='h') continue;
+      if(c==='c'){
+        if(nx==='h'){ out += 'CH'; i++; }
+        else out += (pl==='e' || pl==='i') ? 'S' : 'K';
+        continue;
+      }
+      if(c==='l' && nx==='l'){ out += 'SH'; i++; continue; }
+      if(c==='r'){
+        const first = i===0 || 'nls'.indexOf(p)>=0;
+        if(nx==='r'){ out += 'R'; i++; }
+        else out += first ? 'R' : 'DX';
+        continue;
+      }
+      if(c==='g'){ out += (pl==='e' || pl==='i') ? '/H' : 'G'; continue; }
+      if(c==='j'){ out += '/H'; continue; }
+      if(c==='q'){ out += 'K'; continue; }
+      if(c==='z' || c==='s'){ out += 'S'; continue; }
+      if(c==='v' || c==='b'){ out += 'B'; continue; }
+      if(c==='ñ'){ out += 'NY'; continue; }
+      if(c==='x'){ out += 'KS'; continue; }
+      if(c==='y'){
+        /* a lone "y" or one closing a word is the vowel; otherwise "sh" as in "yo" */
+        out += (n===1 || i===n-1 || !vowel(nx)) ? 'IY' : 'SH';
+        continue;
+      }
+      if(c==='w'){ out += 'W'; continue; }
+      if('dtpfklmn'.indexOf(c)>=0){ out += c.toUpperCase(); continue; }
     }
-    if(!synth) return;
-    synth.cancel();
-    const u = new SpeechSynthesisUtterance(clean);
-    u.lang = voice ? voice.lang : 'es-ES';
-    if(voice) u.voice = voice;
-    u.pitch = 0.05;     // as low and flat as the engine allows
-    u.rate = 0.8;
-    synth.speak(u);
-  };
-  document.querySelectorAll('#voice-toggle button').forEach(b=> b.addEventListener('click', ()=>{
-    on = b.dataset.v==='on';
+    return out;
+  }
+  function phonetic(text){
+    const t = String(text).toLowerCase()
+      .replace(/\([^)]*\)/g, ' ')
+      .split(':')[0]
+      .replace(/[^a-záéíóúüñ0-9\s]/g, ' ');
+    return t.split(/\s+/).filter(Boolean).map(wordToPhonemes).filter(Boolean).join(' ');
+  }
+  window.kyroPhonetic = phonetic;     // handy for checking how a label gets read
+
+  const load = ()=> loadScriptOnce(SAM_LIB, ()=> typeof window.SamJs==='function').then(()=>{ ready = true; }).catch(()=>{ ready = false; });
+  function say(text, force){
+    if(!(on || force)) return;
+    const ph = phonetic(text);
+    const now = performance.now();
+    if(!ph || (ph===last && now-lastT<900)) return;
+    last = ph; lastT = now;
+    if(!ready){ load().then(()=>{ if(ready){ last = ''; say(text, force); } }); return; }
+    try{
+      if(current && current.abort) current.abort('next');
+      const sam = new window.SamJs({speed:70, pitch:60, throat:128, mouth:128, phonetic:true});
+      current = sam.speak(ph, true);
+      if(current && current.catch) current.catch(()=>{});
+    }catch(err){ /* sin audio: no pasa nada */ }
+  }
+  window.kyroSpeak = text=> say(text, false);
+
+  const btn = document.getElementById('voice-btn');
+  const paint = ()=>{ btn.classList.toggle('active', on); btn.setAttribute('aria-pressed', String(on)); };
+  btn.addEventListener('click', ()=>{
+    on = !on;
     try{ localStorage.setItem('kyro-voice', on ? '1' : '0'); }catch(err){}
     paint();
-    if(on){
-      if(engine==='sam') loadSam().then(()=> window.kyroSpeak('Voz robotica activada', true));
-      else if(!synth) showToast('Tu navegador no tiene síntesis de voz.');
-      else window.kyroSpeak('Voz robótica activada', true);
-    } else {
-      if(synth) synth.cancel();
-      if(samNow && samNow.abort) samNow.abort('off');
-    }
-  }));
-  document.querySelectorAll('#voice-engine button').forEach(b=> b.addEventListener('click', ()=>{
-    engine = b.dataset.e;
-    try{ localStorage.setItem('kyro-voice-engine', engine); }catch(err){}
-    paint();
-    last = '';
-    if(engine==='sam') loadSam().then(()=>{ if(on) window.kyroSpeak('Voz robotica', true); });
-    else if(on) window.kyroSpeak('Voz del sistema', true);
-  }));
-  if(on && engine==='sam') loadSam();
+    if(on) load().then(()=> say('Hola', true));
+    else if(current && current.abort) current.abort('off');
+  });
   paint();
+  if(on) load();
 })();
 document.getElementById('undo-btn').addEventListener('click', undo);
 document.getElementById('redo-btn').addEventListener('click', redo);
