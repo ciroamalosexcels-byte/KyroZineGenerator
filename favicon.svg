@@ -1,6 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect x="3" y="3" width="58" height="58" rx="15" fill="#d9381a" stroke="#16130f" stroke-width="6"/>
-  <path d="M15 14h25l9 9v27H15z" fill="#ffe14d" stroke="#16130f" stroke-width="5" stroke-linejoin="round"/>
-  <path d="M40 14v10h9" fill="#fffaf0" stroke="#16130f" stroke-width="5" stroke-linejoin="round"/>
-  <path d="M25 26v17m0-7 9-10m-9 10 10 8" fill="none" stroke="#16130f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- cutting mat -->
+  <rect x="2.5" y="2.5" width="59" height="59" rx="13" fill="#2b6b58" stroke="#16130f" stroke-width="5"/>
+  <g stroke="#4f9a82" stroke-width="1" stroke-linecap="round" opacity=".75">
+    <path d="M16 6v52M24 6v52M32 6v52M40 6v52M48 6v52"/>
+    <path d="M6 16h52M6 24h52M6 32h52M6 40h52M6 48h52"/>
+  </g>
+  <g stroke="#7fc2a8" stroke-width="1.6" stroke-linecap="round" opacity=".9">
+    <path d="M32 6v52M6 32h52"/>
+  </g>
+  <!-- cut marks in the corners -->
+  <g fill="none" stroke="#fffaf0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".85">
+    <path d="M9 14v-5h5M55 14v-5h-5M9 50v5h5M55 50v5h-5"/>
+  </g>
+  <!-- the zine: red page with its hard ink shadow -->
+  <g transform="rotate(-7 32 33)">
+    <rect x="19.5" y="13.5" width="26" height="36" rx="3" fill="#16130f"/>
+    <rect x="16" y="10" width="26" height="36" rx="3" fill="#d9381a" stroke="#16130f" stroke-width="3"/>
+        <!-- K -->
+    <path d="M25.5 18v20M25.5 29l9.5-11M28.5 26l7.5 12" fill="none" stroke="#fffaf0" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 </svg>
