@@ -645,6 +645,38 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
 .theme-toggle button{flex:1;background:transparent;color:var(--text);padding:.4rem .8rem;border-radius:999px;font-weight:700;font-size:.88rem}
 .theme-toggle button.active{background:var(--text);color:var(--bg-card)}
 
+/* collaboration panel, compact: small title, small close button, short ticket */
+#collab-side{gap:.6rem;padding-top:.6rem}
+.collab-profile{display:flex;align-items:center;gap:.6rem}
+.collab-av-btn{flex:0 0 auto;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  box-shadow:3px 3px 0 var(--text);border:none}
+.collab-colors{display:grid;grid-template-columns:repeat(6,1fr);gap:.4rem .35rem;flex:1;justify-items:center}
+.collab-sw{width:22px;height:22px;border-radius:50%;padding:0;border:none;box-shadow:0 0 0 2px var(--text)}
+.collab-sw.on{box-shadow:0 0 0 2px var(--text),0 0 0 5px var(--hl)}
+.collab-icons{display:grid;grid-template-columns:repeat(6,1fr);gap:.4rem;padding:.55rem;border-radius:14px;background:var(--bg-card);box-shadow:inset 2px 2px 0 rgba(22,19,15,.1)}
+.collab-ic{aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--text);padding:0;border:none}
+.collab-ic:hover{background:var(--hl)}
+.collab-ic.on{background:var(--text);color:var(--bg-card)}
+.av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px var(--text)}
+.collab-go{flex:0 0 auto;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--text);color:var(--bg-card);box-shadow:3px 3px 0 var(--stamp);border:none}
+.collab-go:hover{background:var(--stamp);color:#fff;box-shadow:4px 5px 0 var(--text)}
+.collab-go:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--text)}
+#collab-side .ps-main{font-size:.98rem}
+#collab-side .collab-title{gap:.4rem}
+#collab-side .collab-chip{font-size:.6rem;padding:.12rem .45rem;box-shadow:1px 1px 0 var(--text)}
+#collab-side .modal-close{width:28px;height:28px;box-shadow:2px 2px 0 var(--text)}
+#collab-side .modal-close .ico{width:14px;height:14px}
+#collab-side .ticket{margin:.1rem .15rem .2rem;filter:drop-shadow(3px 3px 0 var(--text))}
+#collab-side .ticket-body{min-height:66px}
+#collab-side .ticket-main{padding:.45rem .4rem .45rem .8rem;gap:.2rem}
+#collab-side .ticket-main .collab-code{font-size:1.1rem}
+#collab-side .collab-peer{padding:.2rem .55rem .2rem .25rem;font-size:.8rem}
+.chat-msg{display:flex;gap:.45rem;align-items:flex-start}
+.chat-body{min-width:0;flex:1}
+.chat-who{display:block;font-weight:900;font-size:.72rem;opacity:.7;margin:0}
+#collab-qr{width:min(170px,100%)}
+
 /* ---- responsive / touch layout ---- */
 @media (max-width:900px){
   header{padding-inline:.8rem;gap:.6rem}
@@ -749,6 +781,57 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
   input,select,textarea{font-size:16px!important}
   body.focus-mode .workspace{grid-template-rows:minmax(0,1fr)}
   body.focus-mode #main-area{grid-row:1}
+}
+
+/* Phone. The canvas comes first; the tools sit in one bar at the bottom of it,
+   like the toolbar of a mobile video editor, and the collaboration panel is a
+   full-screen sheet (chat on top of everything) instead of a squeezed strip. */
+@media (max-width:700px){
+  .tool-row,.tool-row.has-options{top:auto;bottom:0;left:0;right:0;padding:.35rem .5rem;display:flex;flex-wrap:nowrap;align-items:center;
+    justify-content:flex-start;gap:.45rem;background:var(--bg-card);border-top:3px solid var(--text);overflow-x:auto;overflow-y:hidden;
+    scrollbar-width:none;z-index:8}
+  .tool-row::-webkit-scrollbar{display:none}
+  #undo-redo{position:static;transform:none;display:flex;flex-direction:row;flex:0 0 auto;box-shadow:none;background:transparent;padding:0;gap:.2rem;
+    padding-right:.45rem;border-right:2px dashed rgba(22,19,15,.25);border-radius:0}
+  #toolbar{display:flex;flex-direction:row;flex:0 0 auto;grid-template-columns:none;box-shadow:none;background:transparent;padding:0;gap:.2rem}
+  .tb{width:44px;height:44px}
+  #stage-scroll,.tool-row:not(.has-options)~#stage-scroll{padding:14px 0 70px}
+  .nav-arrow{bottom:78px}
+  .stage-label{bottom:auto;top:.5rem;left:.6rem}
+  .upload-fab{width:64px;height:64px}
+
+  body.collab-open #side-right{position:fixed;left:0;right:0;top:54px;bottom:0;z-index:45;width:auto;height:auto;border-top:0;background:var(--sidebar)}
+  body.collab-open .mobile-panel-head{display:none}
+  body.collab-open #collab-side{padding:.8rem max(.9rem,env(safe-area-inset-right)) max(.9rem,env(safe-area-inset-bottom)) max(.9rem,env(safe-area-inset-left));gap:.65rem}
+  #collab-side .ps-main{font-size:1.15rem}
+  #collab-side .modal-close{width:40px;height:40px}
+  #collab-side .modal-close .ico{width:18px;height:18px}
+  #collab-side .collab-input{height:46px}
+  #collab-side .mini-btn{height:46px}
+  #collab-side .ib{width:46px;height:46px}
+  #collab-side .collab-tools{justify-content:space-between}
+  #collab-side .collab-tools .ib{flex:1}
+  #collab-live.side-block{flex:1;min-height:0}
+  #collab-side .ticket-body{min-height:72px}
+  #collab-side .ticket-main .collab-code{font-size:1.35rem}
+  #collab-side .chat{flex:1;min-height:120px}
+  #chat-log{font-size:.95rem}
+  .chat-msg{font-size:.95rem}
+  #chat-form .collab-input{height:46px}
+  #collab-qr{width:min(220px,70vw)}
+  #collab-peers{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  #collab-peers::-webkit-scrollbar{display:none}
+  .collab-peer{flex:0 0 auto}
+  body.collab-open .toast{bottom:max(1rem,env(safe-area-inset-bottom))}
+}
+
+@media (max-width:700px) and (orientation:landscape){
+  .tool-row,.tool-row.has-options{padding:.25rem .4rem}
+  .tb{width:38px;height:38px}
+  #stage-scroll,.tool-row:not(.has-options)~#stage-scroll{padding:8px 0 56px}
+  .nav-arrow{bottom:62px}
+  .stage-label{bottom:auto;top:.4rem}
+  body.collab-open #side-right{top:50px}
 }
 
 @media (max-width:390px){
@@ -904,11 +987,16 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
           <span class="collab-label">Tu nombre</span>
           <input class="collab-input" id="collab-name" type="text" maxlength="24" placeholder="Nombre" autocomplete="off">
         </label>
+        <div class="collab-profile">
+          <button type="button" class="collab-av-btn" id="collab-av-btn" aria-label="Elegir icono" aria-expanded="false"></button>
+          <div class="collab-colors" id="collab-colors"></div>
+        </div>
+        <div class="collab-icons" id="collab-icons" hidden></div>
         <button class="mini-btn collab-big" id="collab-create" type="button">Crear sala nueva</button>
         <div class="collab-or">o entrá a una</div>
         <div class="collab-row">
           <input class="collab-input" id="collab-code" type="text" maxlength="12" placeholder="CÓDIGO" autocomplete="off" aria-label="Código de sala">
-          <button class="mini-btn" id="collab-enter" type="button">Entrar</button>
+          <button class="collab-go" id="collab-enter" type="button" aria-label="Entrar" title="Entrar"></button>
         </div>
         <button class="mini-btn" id="collab-listen" type="button" data-icon="mic" data-size="16">Escuchar código</button>
         <button class="mini-btn" id="direct-open" type="button">Conexión directa</button>
@@ -1817,6 +1905,36 @@ const ICONS = {
   'mic':'<path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" rx="3"/>',
   'send':'<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>',
   'user-plus':'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/>',
+  'av-smile':'<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/>',
+  'av-star':'<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+  'av-heart':'<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  'av-moon':'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  'av-sun':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  'av-cloud':'<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>',
+  'av-zap':'<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  'av-flame':'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  'av-leaf':'<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  'av-ghost':'<path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/>',
+  'av-skull':'<path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/>',
+  'av-rocket':'<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+  'av-music':'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  'av-camera':'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  'av-coffee':'<path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/>',
+  'av-crown':'<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
+  'av-gem':'<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
+  'av-umbrella':'<path d="M22 12a10.06 10.06 1 0 0-20 0Z"/><path d="M12 12v8a2 2 0 0 0 4 0"/><path d="M12 2v1"/>',
+  'av-diamond':'<path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41l-7.59-7.59a2.41 2.41 0 0 0-3.41 0Z"/>',
+  'av-triangle':'<path d="M13.73 4a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>',
+  'av-droplet':'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  'av-bell':'<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+  'av-bookmark':'<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
+  'av-flag':'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/>',
+  'av-home':'<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  'av-headphones':'<path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/>',
+  'av-tonto':'<path d="M10.4 3.3C6.1 4.1 3 7.9 3.4 12.2c.4 4.7 4.2 8 8.8 7.7 4.7-.3 8.1-4.3 7.7-8.8-.3-4.2-3.4-7.5-7.5-7.9-.8-.1-1.7 0-2.5.2-.3.1-.6.2-.9.3"/><path d="M8.1 11.9v2.5"/><path d="M14.9 8.2v1.5"/><path d="M7.3 14.9c1.9 2.9 6 3.2 8.8-.9"/>',
+  'av-tree':'<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7H17Z"/><path d="M12 22v-3"/>',
+  'av-anchor':'<path d="M12 6v16"/><path d="m19 13 2-1a9 9 0 0 1-18 0l2 1"/><path d="M9 11h6"/><circle cx="12" cy="4" r="2"/>',
+  'av-hexagon':'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>',
   'eye-off':'<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
   'arrow-up':'<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
   'arrow-down':'<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
@@ -3905,14 +4023,27 @@ function syncImageControls(){
   document.getElementById('vz-fit').addEventListener('click', ()=> setViewZoom(1));
   sc.addEventListener('scroll', ()=>{ renderUploadFabs(canvas, currentViewPages()); renderStageOverlay(canvas); });
   window.addEventListener('resize', ()=> renderStage());
+  /* A mouse wheel and a trackpad both send wheel events. The wheel sends big,
+     isolated steps (about 100 each); a trackpad swipe sends a quick stream of
+     small ones. The wheel zooms; the swipe pans the stage natively, like the
+     hand tool. Pinch (ctrl+wheel, small steps) and Ctrl+wheel zoom as well,
+     each with its own gain so a wheel notch is a gentle ~11%. */
+  let lastWheelT = 0, swipeStream = false;
   sc.addEventListener('wheel', e=>{
-    /* Two-finger swipe (and the plain wheel) pans the stage like the hand
-       tool: the scroller does it natively. Only the pinch gesture, which
-       arrives as ctrl+wheel, and Ctrl+wheel zoom the view. */
-    if(!e.ctrlKey) return;
-    e.preventDefault();
+    const now = performance.now(), dt = now-lastWheelT;
+    lastWheelT = now;
     const dy = e.deltaY*(e.deltaMode===1 ? 16 : e.deltaMode===2 ? 400 : 1);
-    setViewZoomAt(viewZoom*Math.exp(-dy*0.01), e.clientX, e.clientY);
+    if(dt>160) swipeStream = false;
+    const bigStep = Math.abs(dy) >= 40;
+    if(!e.ctrlKey){
+      const notch = bigStep && e.deltaX===0 && dt>40 && !swipeStream;
+      if(!notch){ if(dt<40) swipeStream = true; return; }       // trackpad swipe: let the scroller pan
+      e.preventDefault();
+      setViewZoomAt(viewZoom*Math.exp(-dy*0.0012), e.clientX, e.clientY);
+      return;
+    }
+    e.preventDefault();
+    setViewZoomAt(viewZoom*Math.exp(-dy*(bigStep ? 0.0012 : 0.008)), e.clientX, e.clientY);
   }, {passive:false});
   let mid = null;
   sc.addEventListener('pointerdown', e=>{
@@ -4334,6 +4465,11 @@ function makePager(canvas, view, viewPagesFn){
     flipping = true;
 
     changeFn();
+    /* The half the leaf lands on had no page before (turning the cover, or the
+       back cover): there is no still of it, so the freshly drawn page would
+       show up under the leaf before it has landed. Hide that half until then. */
+    const hideLanding = !stillSrc;
+    if(hideLanding) canvas.style.clipPath = landSlot===0 ? 'inset(0 0 0 50%)' : 'inset(0 50% 0 0)';
     const backSrc = cropHalf(landSlot);
 
     const dispW = rect.width/2;
@@ -4386,6 +4522,7 @@ function makePager(canvas, view, viewPagesFn){
     const finish = ()=>{
       if(overlay.parentNode) overlay.remove();
       if(still && still.parentNode) still.remove();
+      if(hideLanding) canvas.style.clipPath = '';
       flipping = false;
     };
     overlay.getBoundingClientRect(); // force layout so the 0deg start state is registered before animating
@@ -4848,13 +4985,22 @@ document.getElementById('preview-mode-toggle').addEventListener('click', e=>{
 
 (function initPreviewZoomPan(){
   const stage = document.getElementById('preview-stage');
+  let pvWheelT = 0, pvSwipe = false;
   stage.addEventListener('wheel', e=>{
     e.preventDefault();
     if(previewMode==='book'){
       const k = e.deltaMode===1 ? 16 : e.deltaMode===2 ? 400 : 1;
-      if(e.ctrlKey){
-        /* pinch (arrives as ctrl+wheel) / Ctrl+wheel: dolly the camera */
-        book3d.dist = Math.max(1.6, Math.min(8, book3d.dist*Math.exp(e.deltaY*k*0.01)));
+      const now = performance.now(), dt = now-pvWheelT;
+      pvWheelT = now;
+      if(dt>160) pvSwipe = false;
+      const step = e.deltaY*k;
+      /* a big isolated step is a mouse wheel notch: it dollies the camera;
+         a quick stream of small steps is a trackpad swipe: it orbits */
+      const notch = !e.ctrlKey && Math.abs(step)>=40 && e.deltaX===0 && dt>40 && !pvSwipe;
+      if(!e.ctrlKey && !notch && dt<40) pvSwipe = true;
+      if(e.ctrlKey || notch){
+        /* pinch (arrives as ctrl+wheel) / Ctrl+wheel / wheel notch: dolly the camera */
+        book3d.dist = Math.max(1.6, Math.min(8, book3d.dist*Math.exp(step*(Math.abs(step)>=40 ? 0.0012 : 0.008))));
         if(!book3d.anim) drawBook3D();
       } else {
         /* two-finger swipe orbits, same direction as dragging the book */
@@ -6120,7 +6266,8 @@ function collabRecv(p){
 async function collabHandle(k, d, from){
   if(k==='chat'){
     if(d && typeof d.text==='string'){
-      chatAdd({name:String(d.name||'').slice(0,24), color:/^#[0-9a-fA-F]{3,8}$/.test(d.color||'') ? d.color : '#888', text:d.text.slice(0,400)});
+      chatAdd({name:String(d.name||'').slice(0,24), color:/^#[0-9a-fA-F]{3,8}$/.test(d.color||'') ? d.color : '#888',
+        icon:AV_ICONS.indexOf(d.icon)>=0 ? d.icon : 'smile', text:d.text.slice(0,400)});
     }
     return;
   }
@@ -6232,7 +6379,7 @@ function collabPeersChanged(peers){
 }
 function collabTrack(){
   if(!collab.tx) return;
-  collab.tx.track({name:collab.name, color:collab.color, page:state.currentIndex});
+  collab.tx.track({name:collab.name, color:collab.color, icon:collab.icon, page:state.currentIndex});
 }
 function collabPresence(){            // called after each render
   if(collab.on && collab.lastPage!==state.currentIndex){ collab.lastPage = state.currentIndex; collabTrack(); }
@@ -6458,7 +6605,7 @@ function directOnMessage(dc, raw){
 function directAttach(dc){
   direct.list.push(dc);
   dc.onopen = ()=>{
-    dc.send(JSON.stringify({t:'hi', id:collab.id, meta:{name:collab.name, color:collab.color, page:state.currentIndex}}));
+    dc.send(JSON.stringify({t:'hi', id:collab.id, meta:{name:collab.name, color:collab.color, icon:collab.icon, page:state.currentIndex}}));
     if(direct.role==='guest' && !direct.helloSent){
       direct.helloSent = true;
       collab.awaiting = true;
@@ -6514,7 +6661,8 @@ async function collabStartDirect(role){
   try{ localStorage.setItem('kyro-collab-name', name); }catch(err){}
   collab.id = (crypto.randomUUID && crypto.randomUUID()) || (Date.now()+'-'+Math.random().toString(36).slice(2));
   collab.name = name;
-  collab.color = COLLAB_COLORS[Math.floor(Math.random()*COLLAB_COLORS.length)];
+  collab.color = collabProfile().color;
+  collab.icon = collabProfile().icon;
   collab.code = 'DIRECTO';
   collab.uploaded = new Set();
   collab.suspendFile = false;
@@ -6718,7 +6866,8 @@ async function collabStart(code, creating, remote){
   }
   collab.id = (crypto.randomUUID && crypto.randomUUID()) || (Date.now()+'-'+Math.random().toString(36).slice(2));
   collab.name = name;
-  collab.color = COLLAB_COLORS[Math.floor(Math.random()*COLLAB_COLORS.length)];
+  collab.color = collabProfile().color;
+  collab.icon = collabProfile().icon;
   collab.code = code;
   collab.uploaded = new Set();
   try{
@@ -6760,14 +6909,40 @@ function collabLeave(silent){
   if(!silent) showToast('Saliste de la sala.');
 }
 
+/* ----- profile: an icon and a colour for each person ----- */
+const AV_ICONS = ['smile','star','heart','moon','sun','cloud','zap','flame','leaf','ghost','skull','rocket','music','camera','coffee',
+  'crown','gem','umbrella','diamond','triangle','droplet','bell','bookmark','flag','home','headphones','tonto','tree','anchor','hexagon'];
+const AV_COLORS = ['#d9381a','#f08a24','#ffe14d','#7cb342','#2b6b58','#0f9fb0','#2f5aa8','#5b4fd0','#7a4fd0','#e86aa6','#8a5a3c','#16130f'];
+function avInk(hex){
+  const c = hexToRgb(hex);
+  return (0.299*c[0] + 0.587*c[1] + 0.114*c[2]) > 160 ? '#16130f' : '#fffaf0';
+}
+function avHTML(iconId, color, size){
+  const id = AV_ICONS.indexOf(iconId)>=0 ? iconId : 'smile';
+  const col = /^#[0-9a-fA-F]{3,8}$/.test(color||'') ? color : '#888888';
+  const px = size || 22;
+  return '<span class="av" style="width:'+px+'px;height:'+px+'px;background:'+col+';color:'+avInk(col)+'">'+icon('av-'+id, Math.round(px*0.62))+'</span>';
+}
+function collabProfile(){
+  if(!collab.profile){
+    let p = null;
+    try{ p = JSON.parse(localStorage.getItem('kyro-collab-profile')||'null'); }catch(err){}
+    collab.profile = {
+      icon: p && AV_ICONS.indexOf(p.icon)>=0 ? p.icon : AV_ICONS[Math.floor(Math.random()*AV_ICONS.length)],
+      color: p && AV_COLORS.indexOf(p.color)>=0 ? p.color : AV_COLORS[Math.floor(Math.random()*AV_COLORS.length)]
+    };
+  }
+  return collab.profile;
+}
+
 /* ----- chat ----- */
 function chatEscape(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function chatRender(){
   const log = document.getElementById('chat-log');
   if(!log) return;
   log.innerHTML = (collab.chat||[]).map(m=>
-    '<div class="chat-msg'+(m.mine ? ' mine' : '')+'"><span class="chat-who" style="color:'+(m.color||'#888')+'">'+
-    chatEscape(m.mine ? 'Vos' : m.name)+'</span><span class="chat-txt">'+chatEscape(m.text)+'</span></div>').join('');
+    '<div class="chat-msg'+(m.mine ? ' mine' : '')+'">'+avHTML(m.icon, m.color, 22)+'<div class="chat-body"><span class="chat-who">'+
+    chatEscape(m.mine ? 'Vos' : m.name)+'</span><span class="chat-txt">'+chatEscape(m.text)+'</span></div></div>').join('');
   log.scrollTop = log.scrollHeight;
 }
 function chatAdd(m){
@@ -6783,7 +6958,7 @@ function chatAdd(m){
 function chatSend(text){
   text = String(text||'').trim().slice(0, 400);
   if(!text || !collab.on) return;
-  const m = {name:collab.name, color:collab.color, text, ts:Date.now()};
+  const m = {name:collab.name, color:collab.color, icon:collab.icon, text, ts:Date.now()};
   collabSend('chat', m);
   chatAdd(Object.assign({mine:true}, m));
 }
@@ -6980,7 +7155,7 @@ function collabRenderPanel(){
   document.getElementById('collab-peers').innerHTML = Object.keys(peers).sort().map(id=>{
     const p = peers[id];
     const you = id===collab.id ? ' (vos)' : '';
-    return '<span class="collab-peer"><span class="collab-dot" style="background:'+(p.color||'#888')+'"></span>'+
+    return '<span class="collab-peer">'+avHTML(p.icon, p.color, 24)+
       '<span class="nm">'+String(p.name||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')+you+'</span>'+
       '<span class="collab-pg">p.'+((p.page||0)+1)+'</span></span>';
   }).join('');
@@ -6989,6 +7164,30 @@ function collabRenderPanel(){
   const $ = id=> document.getElementById(id);
   const btn = $('collab-btn');
   try{ $('collab-name').value = localStorage.getItem('kyro-collab-name') || ''; }catch(err){}
+  /* who I am: icon + colour */
+  const prof = collabProfile();
+  const paintProfile = ()=>{
+    $('collab-av-btn').innerHTML = avHTML(prof.icon, prof.color, 46);
+    $('collab-av-btn').style.background = 'transparent';
+    $('collab-colors').querySelectorAll('.collab-sw').forEach(b=> b.classList.toggle('on', b.dataset.c===prof.color));
+    $('collab-icons').querySelectorAll('.collab-ic').forEach(b=> b.classList.toggle('on', b.dataset.i===prof.icon));
+  };
+  $('collab-colors').innerHTML = AV_COLORS.map(c=> '<button type="button" class="collab-sw" data-c="'+c+'" style="background:'+c+'" aria-label="Color"></button>').join('');
+  $('collab-icons').innerHTML = AV_ICONS.map(i=> '<button type="button" class="collab-ic" data-i="'+i+'" aria-label="'+i+'">'+icon('av-'+i, 20)+'</button>').join('');
+  const saveProfile = ()=>{
+    try{ localStorage.setItem('kyro-collab-profile', JSON.stringify(prof)); }catch(err){}
+    paintProfile();
+    if(collab.on){ collab.color = prof.color; collab.icon = prof.icon; collabTrack(); }
+  };
+  $('collab-colors').addEventListener('click', e=>{ const b = e.target.closest('.collab-sw'); if(b){ prof.color = b.dataset.c; saveProfile(); } });
+  $('collab-icons').addEventListener('click', e=>{ const b = e.target.closest('.collab-ic'); if(b){ prof.icon = b.dataset.i; saveProfile(); $('collab-icons').hidden = true; $('collab-av-btn').setAttribute('aria-expanded','false'); } });
+  $('collab-av-btn').addEventListener('click', ()=>{
+    const gr = $('collab-icons');
+    gr.hidden = !gr.hidden;
+    $('collab-av-btn').setAttribute('aria-expanded', String(!gr.hidden));
+  });
+  $('collab-enter').innerHTML = icon('chevron-right', 22);
+  paintProfile();
   /* the collaboration panel takes the place of the layers on the right */
   const setOpen = on=>{
     document.body.classList.toggle('collab-open', on);

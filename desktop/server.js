@@ -102,6 +102,7 @@ function cleanMeta(m) {
     name: String(m.name || '').slice(0, 24),
     color: /^#[0-9a-fA-F]{3,8}$/.test(m.color || '') ? m.color : '#888888',
     page: Number.isInteger(m.page) && m.page >= 0 && m.page < 10000 ? m.page : 0,
+    icon: /^[a-z0-9-]{1,16}$/.test(m.icon || '') ? m.icon : '',
   };
 }
 
