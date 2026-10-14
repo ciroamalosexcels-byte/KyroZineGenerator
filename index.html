@@ -258,7 +258,12 @@ select.plain-select{padding:.45rem 2.6rem .45rem 1rem;border:none;border-radius:
 .modal[aria-hidden="true"]{display:none}
 .modal-box{background:var(--bg-card);border-radius:20px;padding:1.4rem 1.5rem;max-width:440px;width:90%;
   box-shadow:6px 6px 0 var(--text)}
-.modal-title{font-weight:800;font-size:1.45rem;margin-bottom:.8rem;letter-spacing:-.01em;line-height:1.1}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.8rem}
+.modal-title{font-weight:800;font-size:1.45rem;letter-spacing:-.01em;line-height:1.1}
+.modal-close{width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+  background:var(--bg);color:var(--text);border-radius:50%;box-shadow:var(--lift)}
+.modal-close:hover{background:var(--hl);transform:translate(-1px,-1px);box-shadow:var(--lift-hi)}
+.modal-close:active{transform:translate(2px,2px);box-shadow:none}
 .modal-msg{font-size:1rem;line-height:1.45;color:var(--text);margin-bottom:1.1rem}
 .modal-actions{display:flex;justify-content:flex-end;gap:.6rem}
 .modal-box .mini-btn{background:var(--bg);color:var(--text);box-shadow:var(--lift)}
@@ -296,7 +301,8 @@ select.plain-select{padding:.45rem 2.6rem .45rem 1rem;border:none;border-radius:
   padding:1.1rem 1.2rem;box-shadow:6px 6px 0 var(--text);width:360px;max-height:calc(100vh - 80px);overflow:auto;
   display:flex;flex-direction:column;gap:1rem}
 .page-settings-menu[hidden]{display:none}
-.ps-head{display:flex;align-items:center;justify-content:space-between}
+.ps-head{display:flex;align-items:center;justify-content:space-between;gap:.7rem}
+.ps-head-actions{display:flex;align-items:center;gap:.45rem}
 .ps-main{font-weight:800;font-size:1.15rem}
 .about-box{max-width:460px}
 .about-box p{font-size:.98rem;line-height:1.5;margin-bottom:.8rem}
@@ -387,6 +393,9 @@ select.plain-select{padding:.45rem 2.6rem .45rem 1rem;border:none;border-radius:
 
 .brush-popover{position:fixed;z-index:75;background:var(--bg-card);border-radius:20px;padding:.7rem;
   box-shadow:6px 6px 0 var(--text);display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;width:350px}
+.brush-popover-head{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:.1rem .15rem .25rem}
+.brush-popover-title{font-weight:800}
+.mobile-panel-head{display:none}
 .brush-tile{display:flex;flex-direction:column;align-items:center;gap:.15rem;background:var(--bg);border-radius:14px;padding:.4rem .4rem .35rem;
   font-weight:700;font-size:.82rem;box-shadow:var(--lift)}
 .brush-tile canvas{width:100%;height:auto;border-radius:10px;background:var(--bg-card)}
@@ -505,10 +514,20 @@ html.dark .upload-fab:hover{color:#16130f}
   .mini-btn.round,.export-btn.round{width:42px;height:42px}
 
   .workspace{height:calc(100vh - 54px);height:calc(var(--app-height,100dvh) - 54px);display:grid;
-    grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(220px,1fr) minmax(150px,30dvh) 112px}
+    grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(210px,1fr) clamp(190px,36dvh,320px) 112px}
+  body.inspector-collapsed .workspace{grid-template-rows:minmax(210px,1fr) 44px 112px}
   #main-area{grid-row:1;min-height:0}
-  #side-right{grid-row:2;width:100%;min-width:0;border-top:3px solid var(--stamp)}
-  #edit-panel{padding:.65rem .8rem;overscroll-behavior:contain}
+  #side-right{grid-row:2;width:100%;min-width:0;border-top:3px solid var(--stamp);overflow:hidden}
+  .mobile-panel-head{height:42px;display:flex;align-items:center;justify-content:center;position:relative;flex:0 0 auto;
+    background:var(--sidebar);font-weight:800;font-size:.88rem;letter-spacing:.01em;cursor:pointer}
+  .mobile-panel-head::before{content:"";position:absolute;top:6px;left:50%;width:42px;height:4px;
+    transform:translateX(-50%);border-radius:999px;background:rgba(22,19,15,.25)}
+  .mobile-panel-toggle{position:absolute;right:max(.55rem,env(safe-area-inset-right));top:5px;width:32px;height:32px;
+    display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--bg-card);box-shadow:2px 2px 0 var(--text)}
+  body.inspector-collapsed .mobile-panel-toggle{transform:rotate(180deg)}
+  body.inspector-collapsed #edit-panel{display:none}
+  #edit-panel{padding:.3rem .8rem max(.8rem,env(safe-area-inset-bottom));overscroll-behavior:contain;scrollbar-width:thin}
+  #edit-panel::after{content:"";display:block;height:.2rem;flex:0 0 auto}
   #side-right .view-zoom{display:none}
 
   #sidebar{grid-row:3;width:100%;height:112px;min-width:0;padding:.55rem .65rem calc(.55rem + env(safe-area-inset-bottom));
@@ -519,7 +538,9 @@ html.dark .upload-fab:hover{color:#16130f}
   .sheet-thumb{width:104px;min-width:104px;height:88px;scroll-snap-align:start;justify-content:flex-end}
   .sheet-thumb-label{font-size:.68rem;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sheet-thumb-grid{flex:1;min-height:0}
-  .preview-btn{position:static;width:48px;min-width:48px;height:48px;min-height:48px;align-self:center}
+  .preview-btn{position:sticky;left:0;width:86px;min-width:86px;height:52px;min-height:52px;align-self:center;z-index:5;
+    gap:.35rem;padding:0 .7rem;box-shadow:4px 4px 0 var(--text)}
+  .preview-btn::after{content:"Vista";font-weight:800;font-size:.78rem}
   .pagecount-row{min-width:96px;justify-content:center;margin:0}
   .clear-btn{height:44px;padding:.35rem .55rem;white-space:normal;line-height:1.05}
 
@@ -548,6 +569,8 @@ html.dark .upload-fab:hover{color:#16130f}
   .modal{padding:max(.65rem,env(safe-area-inset-top)) max(.65rem,env(safe-area-inset-right))
     max(.65rem,env(safe-area-inset-bottom)) max(.65rem,env(safe-area-inset-left));align-items:flex-end}
   .modal-box{width:100%;max-width:none;max-height:calc(100dvh - 1.3rem);overflow:auto;padding:1.1rem;border-radius:18px}
+  .modal-head{position:sticky;top:-1.1rem;z-index:3;margin:-1.1rem -1.1rem .8rem;padding:1rem 1.1rem .65rem;background:var(--bg-card)}
+  .modal-close{width:40px;height:40px}
   .modal-actions .mini-btn{height:44px;flex:1}
   .page-settings-menu{left:.65rem!important;right:.65rem!important;top:auto!important;bottom:max(.65rem,env(safe-area-inset-bottom));
     width:auto;max-height:calc(100dvh - 1.3rem);padding:1rem}
@@ -579,7 +602,8 @@ html.dark .upload-fab:hover{color:#16130f}
   .logo{font-size:.9rem;max-width:calc(100vw - 158px)}
   .header-right{gap:.3rem}
   .mini-btn.round,.export-btn.round{width:40px;height:40px}
-  .workspace{grid-template-rows:minmax(200px,1fr) minmax(140px,28dvh) 104px}
+  .workspace{grid-template-rows:minmax(190px,1fr) clamp(180px,34dvh,260px) 104px}
+  body.inspector-collapsed .workspace{grid-template-rows:minmax(190px,1fr) 44px 104px}
   #sidebar{height:104px}
   .sheet-thumb{height:80px;width:94px;min-width:94px}
   #toolbar{grid-template-columns:repeat(4,40px)}
@@ -594,6 +618,9 @@ html.dark .upload-fab:hover{color:#16130f}
     grid-template-rows:minmax(180px,1fr) 92px}
   #main-area{grid-column:1;grid-row:1}
   #side-right{grid-column:2;grid-row:1;border-top:0;border-left:3px solid var(--stamp)}
+  .mobile-panel-head{display:none}
+  body.inspector-collapsed #edit-panel{display:flex}
+  body.inspector-collapsed .workspace{grid-template-columns:minmax(0,1fr) 190px;grid-template-rows:minmax(180px,1fr) 92px}
   #sidebar{grid-column:1 / -1;grid-row:2;height:92px}
   .sheet-thumb{height:69px}
   .tool-row{display:flex;justify-content:center;align-items:flex-start;flex-wrap:nowrap;overflow-x:auto;padding:0 .25rem}
@@ -630,7 +657,10 @@ html.dark .upload-fab:hover{color:#16130f}
 <div class="page-settings-menu" id="page-settings-menu" hidden>
   <div class="ps-head">
     <span class="ps-main">Ajustes</span>
-    <button type="button" class="ib" id="about-btn" title="Acerca de" aria-label="Acerca de" data-icon="info" data-size="18"></button>
+    <div class="ps-head-actions">
+      <button type="button" class="ib" id="about-btn" title="Acerca de" aria-label="Acerca de" data-icon="info" data-size="18"></button>
+      <button type="button" class="modal-close" id="page-settings-close" title="Cerrar" aria-label="Cerrar ajustes" data-icon="x" data-size="18"></button>
+    </div>
   </div>
   <div class="ps-block">
     <span class="ps-title">Apariencia</span>
@@ -703,6 +733,10 @@ html.dark .upload-fab:hover{color:#16130f}
     <input type="file" id="global-file-input" accept="image/*" style="display:none">
   </div>
   <aside id="side-right">
+    <button type="button" class="mobile-panel-head" id="mobile-panel-toggle" aria-expanded="true">
+      Herramientas de página
+      <span class="mobile-panel-toggle" data-icon="chevron-down" data-size="18"></span>
+    </button>
     <div id="edit-panel"></div>
     <div class="view-zoom" title="Zoom">
         <button type="button" id="vz-out" aria-label="Alejar vista" data-icon="zoom-out" data-size="18"></button>
@@ -715,7 +749,10 @@ html.dark .upload-fab:hover{color:#16130f}
 
 <div id="confirm-modal" class="modal" aria-hidden="true">
   <div class="modal-box">
-    <div class="modal-title" id="confirm-title">¿Confirmar?</div>
+    <div class="modal-head">
+      <div class="modal-title" id="confirm-title">¿Confirmar?</div>
+      <button class="modal-close" id="confirm-close" type="button" title="Cerrar" aria-label="Cerrar" data-icon="x" data-size="18"></button>
+    </div>
     <div class="modal-msg" id="confirm-msg"></div>
     <div class="modal-actions">
       <button class="mini-btn" id="confirm-cancel">Cancelar</button>
@@ -726,14 +763,20 @@ html.dark .upload-fab:hover{color:#16130f}
 
 <div id="howto-modal" class="modal" aria-hidden="true">
   <div class="modal-box howto-box">
-    <div class="modal-title">Cómo armar y coser el zine</div>
+    <div class="modal-head">
+      <div class="modal-title">Cómo armar y coser el zine</div>
+      <button class="modal-close" id="howto-close" type="button" title="Cerrar" aria-label="Cerrar" data-icon="x" data-size="18"></button>
+    </div>
     <div class="howto-steps" id="howto-body"></div>
       </div>
 </div>
 
 <div id="about-modal" class="modal" aria-hidden="true">
   <div class="modal-box about-box">
-    <div class="modal-title">Para qué existe esto</div>
+    <div class="modal-head">
+      <div class="modal-title">Para qué existe esto</div>
+      <button class="modal-close" id="about-close" type="button" title="Cerrar" aria-label="Cerrar" data-icon="x" data-size="18"></button>
+    </div>
     <p>Kyro Zine Generator es una herramienta para que cualquiera pueda hacer su fanzine de manera simple y práctica.</p>
     <p>Nació de una necesidad mía: hacer fanzines sin marearme con diseños, órdenes de página y cuentas. Cargás tus imágenes y tus textos, elegís en qué papel vas a imprimir, y la herramienta acomoda todo para que, al imprimir a doble faz y doblar, te quede un zine de verdad.</p>
     <p>El estilo va a mi gusto: crudo, de fotocopia, hecho a mano.</p>
@@ -1768,15 +1811,19 @@ function openBrushPopover(anchor){
   const col = tool==='eraser' ? '#16130f' : st.color;
   const pop = document.createElement('div');
   pop.className = 'brush-popover';
-  pop.innerHTML = BRUSH_IDS.map(id=>
+  pop.innerHTML = '<div class="brush-popover-head"><span class="brush-popover-title">Elegí un pincel</span>'+
+    '<button type="button" class="modal-close" data-brush-close title="Cerrar" aria-label="Cerrar" data-icon="x" data-size="16"></button></div>'+
+    BRUSH_IDS.map(id=>
     '<button type="button" class="brush-tile'+(st.preset===id?' active':'')+'" data-brush="'+id+'">'+
     '<canvas width="150" height="46"></canvas><span>'+BRUSHES[id].name+'</span></button>').join('');
   document.body.appendChild(pop);
+  paintIcons(pop);
   pop.querySelectorAll('.brush-tile').forEach(t=> drawBrushSample(t.querySelector('canvas'), t.dataset.brush, col, tool==='eraser'));
   const r = anchor.getBoundingClientRect();
   pop.style.left = Math.max(8, Math.min(window.innerWidth-pop.offsetWidth-8, r.left))+'px';
   pop.style.top = (r.bottom+10)+'px';
   pop.addEventListener('click', e=>{
+    if(e.target.closest('[data-brush-close]')){ closeBrushPopover(); return; }
     const t = e.target.closest('[data-brush]'); if(!t) return;
     st.preset = t.dataset.brush;
     closeBrushPopover();
@@ -3852,9 +3899,10 @@ function confirmDialog(title, msg){
     document.getElementById('confirm-msg').textContent = msg;
     modal.setAttribute('aria-hidden','false');
     const ok = document.getElementById('confirm-ok'), cancel = document.getElementById('confirm-cancel');
-    function cleanup(v){ modal.setAttribute('aria-hidden','true'); ok.removeEventListener('click',onOk); cancel.removeEventListener('click',onCancel); resolve(v); }
+    const close = document.getElementById('confirm-close');
+    function cleanup(v){ modal.setAttribute('aria-hidden','true'); ok.removeEventListener('click',onOk); cancel.removeEventListener('click',onCancel); close.removeEventListener('click',onCancel); resolve(v); }
     function onOk(){ cleanup(true); } function onCancel(){ cleanup(false); }
-    ok.addEventListener('click',onOk); cancel.addEventListener('click',onCancel);
+    ok.addEventListener('click',onOk); cancel.addEventListener('click',onCancel); close.addEventListener('click',onCancel);
   });
 }
 
@@ -4118,6 +4166,7 @@ document.getElementById('howto-btn').addEventListener('click', ()=>{
     '<figcaption><b><span class="howto-n">'+(i+1)+'</span>'+st.title+'</b><span>'+st.text+'</span></figcaption></figure>').join('');
   document.getElementById('howto-modal').setAttribute('aria-hidden','false');
 });
+document.getElementById('howto-close').addEventListener('click', ()=> document.getElementById('howto-modal').setAttribute('aria-hidden','true'));
 document.getElementById('howto-modal').addEventListener('click', e=>{ if(e.target.id==='howto-modal') e.currentTarget.setAttribute('aria-hidden','true'); });
 
 /* ---------- page settings menu ---------- */
@@ -4127,6 +4176,13 @@ document.getElementById('page-settings-btn').addEventListener('click', function(
   const rect = this.getBoundingClientRect();
   menu.style.left = Math.max(8, Math.min(window.innerWidth-360, rect.left))+'px';
   menu.style.top = rect.bottom+8+'px';
+});
+document.getElementById('page-settings-close').addEventListener('click', ()=>{ document.getElementById('page-settings-menu').hidden = true; });
+document.getElementById('mobile-panel-toggle').addEventListener('click', function(){
+  const collapsed = document.body.classList.toggle('inspector-collapsed');
+  this.setAttribute('aria-expanded', String(!collapsed));
+  this.setAttribute('aria-label', collapsed ? 'Mostrar herramientas de página' : 'Ocultar herramientas de página');
+  requestAnimationFrame(()=>{ fitStage(); renderStage(); });
 });
 document.addEventListener('pointerdown', e=>{
   const menu = document.getElementById('page-settings-menu');
@@ -4733,6 +4789,7 @@ document.getElementById('redo-btn').addEventListener('click', redo);
   };
   const close = ()=> modal.setAttribute('aria-hidden', 'true');
   document.getElementById('about-btn').addEventListener('click', open);
+  document.getElementById('about-close').addEventListener('click', close);
   modal.addEventListener('click', e=>{ if(e.target===modal) close(); });
   document.addEventListener('keydown', e=>{
     if(e.key==='Escape' && modal.getAttribute('aria-hidden')==='false') close();
