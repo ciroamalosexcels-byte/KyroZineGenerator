@@ -6281,7 +6281,8 @@ async function collabHandle(k, d, from){
   if(k==='chat'){
     if(d && typeof d.text==='string'){
       chatAdd({name:String(d.name||'').slice(0,24), color:/^#[0-9a-fA-F]{3,8}$/.test(d.color||'') ? d.color : '#888',
-        icon:AV_ICONS.indexOf(d.icon)>=0 ? d.icon : 'smile', text:d.text.slice(0,400)});
+        icon:AV_ICONS.indexOf(d.icon)>=0 ? d.icon : 'smile', uid:typeof d.uid==='string' ? d.uid.slice(0,24) : undefined,
+        text:d.text.slice(0,400), ts:Number(d.ts)||Date.now()});
     }
     return;
   }
@@ -6294,7 +6295,8 @@ async function collabHandle(k, d, from){
     const ids = Object.keys(collab.peers).filter(x=> x!==from).sort();
     if(ids[0]!==collab.id) return;
     const snap = await collabPack({pages:state.pages, spreads:state.spreads||{}, pageCount:state.pageCount,
-      pageSize:state.pageSize, sheetSize:state.sheetSize, customFonts:state.customFonts||[], layoutV:state.layoutV});
+      pageSize:state.pageSize, sheetSize:state.sheetSize, customFonts:state.customFonts||[], layoutV:state.layoutV,
+      chat:(collab.chat||[]).slice(-CHAT_KEEP).map(m=> ({name:m.name, color:m.color, icon:m.icon, uid:m.uid, text:m.text, ts:m.ts}))});
     collabSend('snapshot', snap, from);
     return;
   }
@@ -6317,6 +6319,7 @@ function collabApply(k, d){
     state.spreads = d.spreads || {};
     ['pageCount','pageSize','sheetSize','customFonts','layoutV'].forEach(f=>{ if(d[f]!==undefined) state[f] = d[f]; });
     state.currentIndex = 0;
+    chatMerge(d.chat);
     migrateState(); ensurePages();
     pendingHistory = null; historyInit();
     collabBaseline();
@@ -6889,6 +6892,8 @@ async function collabStart(code, creating, remote){
     collab.tx = collab.lan ? await collabLanTx(code, collab.remote) : await collabSupabaseTx(code);
   }catch(err){ collabLeave(true); showToast('No pude conectarme a la sala.'); return; }
   collab.on = true;
+  collab.chat = chatLoad();
+  chatRender();
   collab.lastPage = state.currentIndex;
   collab.suspendFile = false;
   collabTrack();
@@ -6950,6 +6955,48 @@ function collabProfile(){
 }
 
 /* ----- chat ----- */
+function collabUid(){
+  if(!collab.uid){
+    try{ collab.uid = localStorage.getItem('kyro-collab-uid'); }catch(err){}
+    if(!collab.uid){
+      collab.uid = 'u'+Math.random().toString(36).slice(2, 12);
+      try{ localStorage.setItem('kyro-collab-uid', collab.uid); }catch(err){}
+    }
+  }
+  return collab.uid;
+}
+const CHAT_KEEP = 200;
+function chatStoreKey(){ return 'kyro-chat-'+collab.code; }
+function chatSave(){
+  if(!collab.on || collab.code==='DIRECTO') return;
+  try{ localStorage.setItem(chatStoreKey(), JSON.stringify((collab.chat||[]).slice(-CHAT_KEEP).map(m=> ({name:m.name, color:m.color, icon:m.icon, uid:m.uid, text:m.text, ts:m.ts})))); }catch(err){}
+}
+function chatLoad(){
+  if(collab.code==='DIRECTO') return [];
+  try{
+    const a = JSON.parse(localStorage.getItem(chatStoreKey())||'[]');
+    return Array.isArray(a) ? a.filter(m=> m && typeof m.text==='string').slice(-CHAT_KEEP) : [];
+  }catch(err){ return []; }
+}
+/* merge what a newcomer receives with what it already has: no duplicates, in time order */
+function chatMerge(list){
+  const mine = collabUid();
+  const seen = new Set();
+  const all = (collab.chat||[]).concat(Array.isArray(list) ? list : []);
+  const out = [];
+  all.forEach(m=>{
+    if(!m || typeof m.text!=='string') return;
+    const key = (m.ts||0)+'|'+(m.uid||m.name)+'|'+m.text;
+    if(seen.has(key)) return;
+    seen.add(key);
+    out.push({name:String(m.name||'').slice(0,24), color:/^#[0-9a-fA-F]{3,8}$/.test(m.color||'') ? m.color : '#888',
+      icon:AV_ICONS.indexOf(m.icon)>=0 ? m.icon : 'smile', uid:m.uid, text:m.text.slice(0,400), ts:m.ts||0, mine:!!(m.uid && m.uid===mine)});
+  });
+  out.sort((a,b)=> a.ts-b.ts);
+  collab.chat = out.slice(-CHAT_KEEP);
+  chatSave();
+  chatRender();
+}
 function chatEscape(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function chatRender(){
   const log = document.getElementById('chat-log');
@@ -6961,8 +7008,10 @@ function chatRender(){
 }
 function chatAdd(m){
   collab.chat = collab.chat || [];
+  if(m.uid && m.uid===collabUid()) m.mine = true;
   collab.chat.push(m);
-  if(collab.chat.length>200) collab.chat.shift();
+  if(collab.chat.length>CHAT_KEEP) collab.chat.shift();
+  chatSave();
   chatRender();
   if(!m.mine){
     if(!document.body.classList.contains('collab-open')) document.getElementById('collab-btn').classList.add('unread');
@@ -6974,7 +7023,7 @@ function chatAdd(m){
 function chatSend(text){
   text = String(text||'').trim().slice(0, 400);
   if(!text || !collab.on) return;
-  const m = {name:collab.name, color:collab.color, icon:collab.icon, text, ts:Date.now()};
+  const m = {name:collab.name, color:collab.color, icon:collab.icon, uid:collabUid(), text, ts:Date.now()};
   collabSend('chat', m);
   chatAdd(Object.assign({mine:true}, m));
 }
