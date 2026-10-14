@@ -4167,8 +4167,9 @@ function buildHowtoSteps(){
     const strip = (x,y,pair,depth,badge)=>{
       let s='';
       for(let d=depth;d>=1;d--){
-        s+='<rect x="'+(x+d*3).toFixed(1)+'" y="'+(y-d*3).toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+barH.toFixed(1)+'" fill="#fff" stroke="'+INK+'" stroke-width="1.4"/>'+
-           '<line x1="'+(x+d*3+barW/2).toFixed(1)+'" y1="'+(y-d*3).toFixed(1)+'" x2="'+(x+d*3+barW/2).toFixed(1)+'" y2="'+(y-d*3+barH).toFixed(1)+'" stroke="'+INK+'" stroke-width="1.1"/>';
+        const dx=d*5, dy=d*5;
+        s+='<rect x="'+(x+dx).toFixed(1)+'" y="'+(y-dy).toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+barH.toFixed(1)+'" fill="'+(d%2?'#fffaf0':'#fff')+'" stroke="'+INK+'" stroke-width="1.6"/>'+
+           '<line x1="'+(x+dx+barW/2).toFixed(1)+'" y1="'+(y-dy).toFixed(1)+'" x2="'+(x+dx+barW/2).toFixed(1)+'" y2="'+(y-dy+barH).toFixed(1)+'" stroke="'+INK+'" stroke-width="1.3"/>';
       }
       pair.forEach((num,j)=>{
         const px=x+j*barW/2, cover=num===1||num===state.pageCount;
