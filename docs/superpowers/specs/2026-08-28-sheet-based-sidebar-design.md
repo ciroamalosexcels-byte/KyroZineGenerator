@@ -593,3 +593,331 @@ gradual, no instantáneo.
   gira encima, en vez de aparecer de golpe en el lugar nuevo.
 
 Verificación: solo lectura de código + chequeo de sintaxis — sin navegador.
+
+## 19. A4: 4 páginas por cara (2×2), PDF vertical, corte al medio
+
+**Fecha:** 2026-10-13
+
+Pedido: en A4 la hoja impresa debe traer 4 páginas por cara — contratapa arriba
+a la izquierda y tapa arriba a la derecha en la hoja 1 — lista para imprimir a
+doble faz en una impresora A4 y armar el librito, reacomodándose según la
+cantidad de páginas.
+
+- **`state.perFace`** (2 | 4). Por defecto A4 → 4, A3/A5 → 2 (A3 queda como
+  estaba). Selector "Páginas por cara" en el menú Página. Proyectos viejos sin
+  el campo toman el default según su tamaño (`layoutV` 3).
+- **`buildPapers()`** arma las hojas físicas a partir de las hojas del librito
+  (`buildSheets()`, sin cambios). A 4 por cara, el papel *j* lleva la hoja *j*
+  arriba y la hoja *j+m* abajo (m = ⌈hojas/2⌉); si la cantidad es impar, la
+  fila de abajo del último papel queda vacía. Al cortar la pila al medio y poner
+  la pila de abajo debajo de la de arriba, las hojas quedan en orden 1..n.
+  Ejemplo 16 págs: frente `[16|1]/[12|5]`, dorso `[2|15]/[6|11]`; papel 2 frente
+  `[14|3]/[10|7]`, dorso `[4|13]/[8|9]`.
+- Las filas tienen el mismo orden en frente y dorso: girar por el borde largo
+  solo espeja izquierda/derecha, que `buildSheets()` ya contempla.
+- Página = ¼ de la hoja (A4 → A6, misma proporción 1:√2 que antes).
+- **PDF**: papel vertical, `DuplexFlipLongEdge`, marcas laterales de corte en
+  el frente. Con 2 por cara sigue apaisado y `DuplexFlipShortEdge`.
+- Sidebar: una miniatura por papel (frente 2×2 a la izquierda, dorso a la
+  derecha). Vista previa "Hojas a imprimir": igual disposición.
+- "Cómo coserlo" explica el corte y el reapilado.
+
+Verificación: chequeo de sintaxis del `<script>` y de la imposición con node —
+sin navegador, según la directiva vigente.
+
+## 20. Papel + tamaño de página independientes, un solo librito, menú visual, estética
+
+**Fecha:** 2026-10-13
+
+Pedido: dejar de elegir "cuadernillo 4/8/16" y "páginas por cara". La persona
+carga sus imágenes libremente y después define (1) en qué papel imprime (A3/A4)
+y (2) qué tamaño tiene cada página del fanzine (A4/A5/A6). Siempre sale como
+librito "posta": una sola pila anidada, con la contratapa al lado de la tapa en
+la hoja 1.
+
+- **Estado:** `sheetSize` (papel A4|A3) + `pageSize` (A4|A5|A6). Se eliminaron
+  `signatureSize` y `perFace`; `layoutV` 4 migra proyectos viejos (A3 2/cara →
+  A4, A3 4/cara → A5, A4 2/cara → A5, A4 4/cara o sin dato → A6).
+- **`layoutFor(papel, página)`:** acomoda páginas verticales en el papel en la
+  orientación que más entre, con columnas pares (pares izquierda/derecha).
+  Combinaciones válidas: A4→A5 (2 por cara), A4→A6 (4), A3→A4 (2), A3→A5 (4),
+  A3→A6 (8).
+- **`buildPapers()`:** el papel *j* lleva las hojas del librito *j + k·m* en cada
+  "slot" *k* (m = ⌈hojas/slots⌉). Cortando la pila en tiras y reapilándolas en
+  orden queda 1..n. El dorso de cada hoja va en el spread espejado (volteo por el
+  borde largo). Verificado por script para las 5 combinaciones y 4–60 páginas.
+- **Panel izquierdo:** muestra el librito en orden de lectura (tapa a la derecha,
+  spreads, contratapa a la izquierda); la imposición solo existe en la vista
+  previa "Hojas a imprimir" y en el PDF (con marcas de corte en el borde).
+- **Menú Página:** dibujos que se tocan — papel (A4/A3 a escala) y tarjetas del
+  papel dividido en secciones por cada tamaño de página posible.
+- **Cómo coserlo:** pasos con dibujos generados con la imposición real (hoja 1
+  con sus números, líneas de corte numeradas, reapilado, doblez, grampas).
+- **Estética:** tema "fotocopia": papel crema, tinta negra, rojo bermellón,
+  resaltador amarillo, colchoneta de corte verde detrás de las páginas;
+  Anton + Archivo + Courier Prime; sin degradés ni vidrio; sombras duras de
+  tinta; leve rotación en miniaturas y pasos (ver criterios en
+  `Wmezatec/06_Landing_web/NOTAS_DISENO.md`).
+
+Verificación: sintaxis del `<script>`, ids del DOM y simulación de la
+imposición con node — sin navegador, según la directiva vigente.
+
+## 21. Herramientas tipo Photoshop, pliego, volteo corregido, botones sin borde
+
+**Fecha:** 2026-10-13
+
+- **Volteo de página:** el lienzo del editor siempre mide dos páginas; la tapa
+  se dibuja en la mitad derecha y la contratapa en la izquierda (libro cerrado
+  sobre la mesa), así el lomo no se mueve. La hoja que gira es siempre una
+  mitad: la cara de adelante es la página que se levanta y la de atrás es la
+  página real que queda del otro lado (leída del lienzo ya redibujado), con
+  perspectiva 3D. Una imagen fija de la mitad que va a tapar se queda debajo
+  hasta que aterriza.
+- **Pliego** (botón en el panel de imagen, solo en págs 2…N-1): una imagen para
+  las dos páginas enfrentadas. Se guarda en `state.spreads[izquierda]`; cada
+  página dibuja su mitad, así que al imprimir (páginas en hojas distintas)
+  sigue alineada.
+- **Herramientas** (barra sobre el lienzo, atajos entre paréntesis): Mover (V),
+  Escalar y rotar (R), Recortar (C), Texto (T), Pincel (B), Goma (E), Mano (H /
+  espacio), Lupa (Z). Transformar: esquinas escalan proporcional; **Shift**
+  deforma (`scaleX/scaleY`); **Alt** escala desde el centro; el círculo superior
+  rota (Shift = de a 15°). Recortar: `image.crop` en fracciones, sin reescalar
+  lo que queda. Flechas: mover 1 mm (Shift 5 mm); Re Pág / Av Pág cambian de
+  página. Texto con `offsetX/offsetY/rotation`. Dibujo en `page.strokes`
+  (vectores en mm, la goma solo borra tinta).
+- **Campos numéricos** en lugar de sliders: se escribe el valor, ↑/↓ ajustan
+  (Shift ×10) y arrastrar la etiqueta lo "frota".
+- **UI:** una sola tipografía (Archivo, más grande), botones y campos en
+  píldora, sin bordes, con sombra dura y animación de apretado; íconos SVG
+  estilo Lucide en lugar de caracteres.
+
+Verificación: sintaxis, ids del DOM y una corrida de humo del script con un
+DOM simulado — sin navegador, según la directiva vigente.
+
+## 22. Libro que se desliza, 3D en 2D, pinceles, deshacer, archivos .kyro
+
+**Fecha:** 2026-10-13
+
+- **Página sola centrada y deslizante:** `#book` envuelve el lienzo (siempre de
+  dos páginas); tapa/contratapa lo desplazan ±¼ de ancho con una transición del
+  mismo largo que el volteo. La hoja que gira, la imagen fija y los "+" viven
+  dentro de `#book`, así se mueven juntos.
+- **Cutmat completo:** `#stage-scroll` ocupa todo el fondo verde; las barras
+  (herramientas, alineación, zoom) flotan encima. Sin líneas entre paneles.
+  La rueda hace zoom del libro (hacia el cursor); botón central o espacio
+  desplazan la vista.
+- **Overlay `#stage-overlay`:** margen de 70 px alrededor del libro con la
+  imagen que se sale a 40 % de opacidad y los tiradores de transformar/recortar
+  (se pueden agarrar fuera de la página).
+- **Alinear:** izquierda / centro / derecha, arriba / medio / abajo y centrar,
+  contra los bordes de la página (o del pliego).
+- **Deshacer/rehacer:** Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z; copias estructurales
+  (las imágenes se comparten por referencia), una por cada `save()`.
+- **Pinceles (10):** lápiz, bolígrafo, marcador, pincel suave, acuarela,
+  aerógrafo, carbón, tiza, resaltador, caligrafía; la goma usa los mismos con
+  `destination-out`. Grosor y opacidad (rueda sobre el campo, `[` `]`),
+  presión de la tableta (Pointer Events), anillo que muestra la punta real.
+  Los trazos guardan semilla: se redibujan idénticos.
+- **Vista previa:** por defecto "Hojas". "Librito" es una escena 3D de software
+  dibujada en canvas 2D (cuadrículas de triángulos con mapeo afín, estilo
+  PS1): libro abierto a 140°, se orbita arrastrando, las hojas giran sobre el
+  lomo.
+- **Archivos:** Guardar / Guardar como… / Abrir… con el selector del sistema
+  (File System Access API) y respaldo por descarga; siempre `.kyro`. Ctrl+S.
+- **Imágenes:** JPG, PNG, TIFF (UTIF) y RAW (se usa el JPEG grande embebido).
+- **Miniaturas** a ~360 px de ancho; el lienzo del editor a ~145 dpi.
+
+Verificación: sintaxis, ids y corridas de humo con DOM simulado (pinceles,
+escena 3D, instructivo, historial) — sin navegador, según la directiva vigente.
+
+## 23. Librito 3D con grosor, mesa a 45° y arreglos
+
+**Fecha:** 2026-10-13
+
+- **Escena:** el libro está acostado sobre el cutmat (plano z=0) con fondo gris
+  oscuro; cámara a ~45° (`pitch` 0.8). Arrastrar horizontal gira el libro sobre
+  la mesa (sin límite), vertical lo inclina hasta ver por debajo, y el botón
+  "Dar vuelta" lo pasa al otro lado. Rueda arriba acerca, rueda abajo aleja.
+- **Grosor:** cada pila (izquierda/derecha del lomo) mide `hojas × 0.013`
+  (tope 0.3); se dibujan el canto exterior y los cantos superior/inferior con
+  líneas de hojas.
+- **Bug "siempre la página 2 a la izquierda":** la hoja inferior de la pila
+  izquierda se desplazaba hacia la cámara en vez de alejarse (el normal de esa
+  cara apunta al revés), así que se dibujaba encima. Ahora los desplazamientos
+  van "hacia arriba de la mesa" para ambos lados.
+- **Tiradores recortados:** el overlay cubre todo el escenario (no solo libro +
+  70 px), y los eventos de puntero se escuchan en toda la mesa.
+- **Selección de texto** desactivada salvo en campos de texto.
+
+## 24. Instructivo revisado, libro parado y campos con rueda
+
+**Fecha:** 2026-10-13
+
+- **Instructivo:** el paso 3 ya no habla de "pilas" sino de **tiras**: después de
+  cortar se juntan las tiras de la misma posición (todas las 1, todas las 2…)
+  y se ponen la 2 debajo de la 1, etc. (verificado por simulación: ese orden
+  da las hojas 1..n). El doblez muestra la hoja abierta → hoja doblada con el
+  lomo a la izquierda; "una dentro de otra" dibuja V paralelas vistas desde
+  arriba; la grampa son dos barras finas a lo largo del doblez, sin números.
+- **Librito 3D:** vuelve a estar parado sobre la mesa (cutmat horizontal),
+  hojas más finas (`0.006` por hoja), la hoja que gira se curva, el giro usa
+  easing cúbico (1 s) y la órbita se suaviza hacia el destino. Arrastrar hacia
+  abajo inclina el libro mostrando más su parte superior; horizontal gira
+  sin límite. "Dar vuelta" gira 180°.
+- **Bug del destello de la página de atrás:** la hoja que aterrizaba quedaba
+  0.02 por debajo del tope de la pila izquierda; ahora su altura final es la de
+  la pila con ella incluida.
+- **Campos numéricos:** la rueda sobre cualquier campo suma (arriba) o resta
+  (abajo); Shift ×5. La presión del lápiz es un nivel de 0 a 100 %.
+
+## 25. Panel derecho con capas; texto en la barra de arriba
+
+**Fecha:** 2026-10-13
+
+- **Texto → barra superior:** con la herramienta Texto la barra de arriba trae
+  el cuadro de texto, fuente (+ fuente propia), tamaño, rotación, alineación
+  horizontal/vertical y color, igual que el pincel.
+- **Panel de abajo → columna a la derecha** (296 px, vertical). Sección
+  **Capas** (Imagen, Dibujo, Texto y Fondo fijo): ojo para ocultar, subir/bajar
+  el orden de dibujo, clic para seleccionar. Orden y visibilidad se guardan por
+  página (`page.order`, `page.hidden`) y rigen también en la exportación.
+  Debajo: controles de imagen y fondo.
+- **Panel izquierdo** más angosto (158 px).
+
+## 26. Texto libre, capas borrables, imágenes extra, "Doble"
+
+**Fecha:** 2026-10-13
+
+- **Texto como en Photoshop:** con la herramienta Texto, un clic crea texto de
+  punto (se escribe donde se hizo clic) y arrastrar dibuja una caja de texto de
+  área (ajusta el renglón al ancho). Clic sobre el texto lo edita, arrastrarlo lo
+  mueve, y los tiradores laterales cambian el ancho de la caja; la esquina
+  escala la letra y el círculo rota. Campos nuevos `fx, fy, fw` (mm); sin `fx`
+  rige el modo anterior centrado en la página.
+- **Fuentes de la computadora** (Local Font Access API, Chrome/Edge) con el botón
+  "Mis fuentes"; el selector tiene la flecha con aire.
+- **Capas:** botón de basura por capa y tecla Supr/Retroceso sobre lo
+  seleccionado. "Agregar imagen" crea imágenes extra dentro de la página
+  (`page.extras`, capas `extra:<id>`), cada una con su propia transformación.
+- **"Pliego" → "Doble"** (una imagen en las dos páginas enfrentadas). "Vaciar"
+  quedó debajo.
+- **3D:** el culling de caras usa el vector hacia la cámara (perspectiva
+  correcta, ya no desaparece el canto), la mesa se recorta contra el plano
+  cercano y es mucho más grande, y la cámara no baja de la mesa.
+
+
+---
+
+# Registro de la sesión del 12–13 de octubre de 2026 (versión 0.9.0)
+
+Versión estimada: **0.9.0**. Partimos de la 0.2 (spec del panel de hojas e
+`index.html` de fines de agosto) y esta sesión sumó casi todo lo que hoy es la
+herramienta: imposición real de zine, herramientas de edición, dibujo, capas,
+vista previa 3D, archivos `.kyro` con autoguardado y una nueva identidad
+visual. Falta pasarla por mucho uso real y por Firefox/Safari para llamarla 1.0.
+
+## Impresión e imposición
+- **Papel y página independientes:** se elige el papel (A3 o A4) y el tamaño de
+  cada página del zine (A4, A5 o A6). Combinaciones válidas: A4→A5 (2 por cara),
+  A4→A6 (4), A3→A4 (2), A3→A5 (4), A3→A6 (8).
+- **Un solo zine anidado:** ya no hay cuadernillos de 4/8/16. Se imprime a doble
+  faz, se corta en tiras, se juntan las de la misma posición, se doblan las
+  hojas, se meten una dentro de otra y se grampa desde adentro.
+- **Imposición verificada por simulación** para las 5 combinaciones y de 4 a 60
+  páginas (el dorso queda detrás de su frente y las hojas salen en orden 1…n).
+- **PDF** vertical u horizontal según el papel, con marcas de corte en el borde y
+  la bandera de doble faz correcta (borde largo / corto).
+- **Selector visual** de papel y tamaño de página (dibujos que se tocan).
+- **Instructivo "Cómo armarlo"** con dibujos generados con la configuración
+  real: imprimir, cortar, juntar las tiras, doblar, una hoja dentro de otra y
+  grampar desde adentro (dos grampas finas sobre el doblez).
+
+## Edición en el escenario
+- **Mesa de corte verde** ocupando todo el fondo, con las barras flotando encima;
+  Tab oculta todos los paneles y deja solo la mesa y el header.
+- **Página sola centrada** que se desliza al abrir o cerrar; el volteo de página
+  usa el contenido real en ambas caras, con perspectiva.
+- **Zoom de la vista** con la rueda (hacia el cursor), lupa con clic / Alt /
+  clic derecho, mano con barra espaciadora o botón central.
+- **Herramientas:** mover, escalar y rotar (Shift deforma, Alt desde el centro),
+  recortar, texto, pincel, goma, mano y lupa. Atajos V R C T B E H Z.
+- **Flechas** mueven 1 mm (Shift 5 mm); Re Pág / Av Pág cambian de página.
+- **Tiradores visibles fuera de la página**, con la parte que se sale a
+  media transparencia.
+- **Alineación** contra los bordes o el centro de la página (imagen, texto y
+  dibujo).
+- **Cursor del mouse** con el ícono de cada herramienta.
+- **Deshacer / rehacer** (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z) con botones arriba a la
+  izquierda; el cambio de color en vivo cuenta como un solo paso.
+
+## Imagen, texto y dibujo
+- **Capas por página:** Imagen, Dibujo, Texto, imágenes extra y Fondo fijo; ojo
+  para ocultar, basura, y reordenar arrastrando con animación. Orden y
+  visibilidad también valen en el PDF.
+- **Agregar imagen:** imágenes extra dentro de la página, cada una con su
+  transformación. **Doble:** una imagen en las dos páginas enfrentadas
+  (antes "Pliego").
+- **Texto como en Photoshop:** clic = texto de punto, arrastrar = caja de
+  texto; marco con tiradores desde que se crea vacío; fuentes propias y fuentes
+  de la computadora (Chrome/Edge).
+- **Pinceles:** 10 (lápiz, bolígrafo, marcador, pincel suave, acuarela,
+  aerógrafo, carbón, tiza, resaltador, caligrafía); la goma usa los mismos.
+  Presión de tableta (Pointer Events) sobre tamaño y opacidad, tamaño mínimo,
+  curva y estabilizador; anillo que muestra la punta real.
+- **Campos numéricos:** se escribe el valor, ↑↓ de a uno, la rueda de a uno
+  (Shift ×5) y se arrastra la etiqueta; números centrados entre sí.
+- **Panel derecho contextual** (imagen / texto / dibujo) agrupado en categorías.
+- **Imágenes JPG, PNG, TIFF y RAW** (de los RAW se usa el JPEG grande embebido).
+- **Se quitó** el marco de la imagen (ya lo cubre el fondo) y los sliders.
+
+## Vista previa
+- Encabezado con título, especificaciones y cruz de cerrar; abre en **Hojas**
+  (sin cortar) y tiene el modo **Zine**.
+- **Zine 3D** hecho en canvas 2D (estilo PlayStation): parado sobre la mesa,
+  abierto a 140°, hojas finas con grosor según la cantidad, la hoja que gira se
+  curva, órbita suave con inercia, "Dar vuelta" para ver la contratapa.
+- Se corrigieron: orden de dibujo de las hojas (siempre se veía la página 2),
+  cantos que desaparecían con la perspectiva y la mesa que se rompía al bajar.
+
+## Archivos y guardado
+- **Guardar, Guardar como… y Abrir…** con el selector del sistema; siempre
+  `.kyro`; Ctrl+S.
+- **Autoguardado** en el navegador (localStorage + IndexedDB, sin tope de 5 MB)
+  y, una vez elegido el archivo, en el propio `.kyro`; estado visible en el
+  header y reconexión con un enlace subrayado.
+- Al restaurar se precargan también las imágenes extra y las de "Doble".
+
+## Identidad visual y comodidad
+- Estilo de fotocopia: papel crema, tinta negra, rojo y resaltador amarillo, una
+  sola tipografía (Archivo). Sin degradés.
+- Botones sin borde, en píldora o círculo, con sombra dura y animación al apretar;
+  los seleccionados llevan una línea fina entre botón y sombra.
+- **Íconos** SVG estilo Lucide; tooltips unificados en una pastilla oscura.
+- **Barras de scroll** propias (en Chrome; la del panel izquierdo va a la
+  izquierda, sin flechas).
+- **Modo oscuro** (Ajustes → Apariencia).
+- **Ajustes → info:** para qué existe la herramienta, el agradecimiento, la firma
+  y la versión.
+- Texto no seleccionable fuera de los campos; "librito" pasó a "zine" en toda la
+  interfaz.
+
+## Conocido / pendiente
+- La presión de la tableta depende de que Windows Ink esté activo en el driver
+  Wacom (la barra del pincel muestra si llega como "tableta" o "mouse").
+- Fuentes del sistema y archivo de autoguardado: solo Chrome y Edge.
+- Nunca se probó en Firefox ni Safari; todo lo anterior se verificó con
+  simulación y revisión de código, y con las pruebas manuales del propio autor.
+- Ideas que quedaron: varias cajas de texto por página, panel 3D en vivo mientras
+  se edita, más formatos de papel.
+
+## Agregado posterior (misma sesión)
+- **Deshacer persistente:** el historial (hasta 30 pasos) se guarda dentro del
+  `.kyro` y en el autoguardado; al recargar o reabrir se puede seguir con
+  Ctrl+Z. Formato 2: las imágenes van una sola vez en una tabla `images` y el
+  estado y los pasos apuntan a ella, así el historial no multiplica el peso.
+  Los archivos viejos (estado suelto) se siguen abriendo.
+- **Selección de página** como un corchete por fuera de la página (arriba, abajo
+  y el lado exterior), sin dibujar nada encima de la imagen.
+- **Modo "Libre"** de ajuste de imagen: el tamaño no se reajusta al rotar.
+- Cursores del sistema en lugar de íconos propios; la lupa mantiene su cursor
+  con el clic derecho.
