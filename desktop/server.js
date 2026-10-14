@@ -122,7 +122,12 @@ function createServer({ port = 3737, root }) {
     if (req.method === 'GET' && p === '/lan-peers') {
       const list = discovery ? discovery.list() : [];
       res.writeHead(200, Object.assign({ 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, CORS));
-      res.end(JSON.stringify({ peers: list.map((q) => Object.assign({ url: 'http://' + q.host + ':' + q.port + '/' }, q)) }));
+      const mine = [];
+      rooms.forEach((members, code) => { if (members.size > 0) mine.push(code); });
+      res.end(JSON.stringify({
+        self: { name: os.hostname(), rooms: mine.slice(0, 20) },
+        peers: list.map((q) => Object.assign({ url: 'http://' + q.host + ':' + q.port + '/' }, q)),
+      }));
       return;
     }
 

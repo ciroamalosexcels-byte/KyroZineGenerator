@@ -336,6 +336,7 @@ select.plain-select{padding:.45rem 2.6rem .45rem 1rem;border:none;border-radius:
 #collab-btn{position:relative}
 .collab-net{display:flex;flex-direction:column;gap:.5rem}
 .net-peer{display:flex;flex-direction:column;gap:.4rem;padding:.6rem;border-radius:14px;background:var(--bg-card);box-shadow:3px 3px 0 var(--text)}
+.net-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
 .net-name{display:flex;align-items:center;gap:.45rem;font-weight:900;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .net-name::before{content:"";width:10px;height:10px;border-radius:50%;background:#2b6b58;box-shadow:0 0 0 2px var(--text);flex:0 0 auto}
 .net-rooms{display:flex;flex-wrap:wrap;gap:.35rem}
@@ -379,6 +380,7 @@ body.collab-open #edit-panel{display:none}
 .chat-msg.mine .chat-txt{opacity:.8}
 #chat-form{display:flex;gap:.4rem;align-items:center}
 #chat-form .collab-input{height:38px}
+#chat-voice.active,#voice-btn.active{background:var(--text);color:var(--bg-card)}
 .export-adv{margin-top:.9rem;font-size:.9rem}
 .export-adv summary{cursor:pointer;font-weight:700;color:var(--muted)}
 #export-preset{display:flex;width:100%;gap:.5rem;padding:4px}
@@ -672,6 +674,12 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
 #collab-side .ticket-main{padding:.45rem .4rem .45rem .8rem;gap:.2rem}
 #collab-side .ticket-main .collab-code{font-size:1.1rem}
 #collab-side .collab-peer{padding:.2rem .55rem .2rem .25rem;font-size:.8rem}
+#collab-side .ps-head{flex-wrap:nowrap;align-items:flex-start}
+#collab-side .collab-title{flex-direction:column;align-items:flex-start;gap:.2rem;min-width:0}
+#collab-side .collab-av-btn{width:40px;height:40px}
+#collab-side .collab-av-btn .av{width:100% !important;height:100% !important}
+#collab-side .collab-colors{grid-template-columns:repeat(6,18px);justify-content:space-between}
+#collab-side .collab-sw{width:18px;height:18px}
 .chat-msg{display:flex;gap:.45rem;align-items:flex-start}
 .chat-body{min-width:0;flex:1}
 .chat-who{display:block;font-weight:900;font-size:.72rem;opacity:.7;margin:0}
@@ -807,6 +815,10 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
   #collab-side .modal-close{width:40px;height:40px}
   #collab-side .modal-close .ico{width:18px;height:18px}
   #collab-side .collab-input{height:46px}
+  #collab-side .collab-av-btn{width:46px;height:46px}
+  #collab-side .collab-colors{grid-template-columns:repeat(6,1fr);justify-content:stretch}
+  #collab-side .collab-sw{width:24px;height:24px}
+  #collab-side .collab-title{flex-direction:row;align-items:center}
   #collab-side .mini-btn{height:46px}
   #collab-side .ib{width:46px;height:46px}
   #collab-side .collab-tools{justify-content:space-between}
@@ -1025,6 +1037,7 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
         <div class="chat">
           <div id="chat-log"></div>
           <form id="chat-form" autocomplete="off">
+            <button type="button" class="ib" id="chat-voice" title="Leer los mensajes en voz alta" aria-label="Leer los mensajes en voz alta" data-icon="volume" data-size="18"></button>
             <input class="collab-input" id="chat-input" type="text" maxlength="400" placeholder="Escribí un mensaje" aria-label="Mensaje">
             <button type="submit" class="ib" id="chat-send" title="Enviar" aria-label="Enviar" data-icon="send" data-size="18"></button>
           </form>
@@ -1931,10 +1944,11 @@ const ICONS = {
   'av-flag':'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/>',
   'av-home':'<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   'av-headphones':'<path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/>',
-  'av-tonto':'<path d="M10.4 3.3C6.1 4.1 3 7.9 3.4 12.2c.4 4.7 4.2 8 8.8 7.7 4.7-.3 8.1-4.3 7.7-8.8-.3-4.2-3.4-7.5-7.5-7.9-.8-.1-1.7 0-2.5.2-.3.1-.6.2-.9.3"/><path d="M8.1 11.9v2.5"/><path d="M14.9 8.2v1.5"/><path d="M7.3 14.9c1.9 2.9 6 3.2 8.8-.9"/>',
+  'av-tonto':'<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="11.4" y2="11.4"/>',
   'av-tree':'<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7H17Z"/><path d="M12 22v-3"/>',
   'av-anchor':'<path d="M12 6v16"/><path d="m19 13 2-1a9 9 0 0 1-18 0l2 1"/><path d="M9 11h6"/><circle cx="12" cy="4" r="2"/>',
   'av-hexagon':'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>',
+  'search':'<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>',
   'eye-off':'<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
   'arrow-up':'<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
   'arrow-down':'<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
@@ -6953,6 +6967,8 @@ function chatAdd(m){
   if(!m.mine){
     if(!document.body.classList.contains('collab-open')) document.getElementById('collab-btn').classList.add('unread');
     if(window.kyroRead) window.kyroRead((m.name||'')+' dice '+m.text);
+  } else if(window.kyroRead){
+    window.kyroRead(m.text);          // so you hear what you just sent
   }
 }
 function chatSend(text){
@@ -7252,21 +7268,39 @@ function collabRenderPanel(){
   });
   /* other servers on this network (the desktop app announces itself by UDP) */
   const netBox = $('collab-net');
-  const renderNet = peers=>{
+  let netBusy = false, netLast = {peers:[], self:null};
+  const renderNet = (peers, self, scanning)=>{
     netBox.hidden = false;
-    if(!peers.length){ netBox.innerHTML = '<span class="collab-label">En tu red</span><span class="net-empty">Buscando servidores…</span>'; return; }
-    netBox.innerHTML = '<span class="collab-label">En tu red</span>' + peers.map(q=>
-      '<div class="net-peer"><div class="net-name">'+chatEscape(q.name||q.host)+'</div><div class="net-rooms">'+
-      (q.rooms||[]).map(c=> '<button type="button" class="net-room" data-host="'+q.host+':'+q.port+'" data-code="'+c+'">'+c+'</button>').join('')+
-      '<button type="button" class="net-new" data-host="'+q.host+':'+q.port+'">+ sala</button></div></div>').join('');
-    netBox.querySelectorAll('.net-room').forEach(b=> b.addEventListener('click', ()=> collabStart(b.dataset.code, false, {host:b.dataset.host})));
-    netBox.querySelectorAll('.net-new').forEach(b=> b.addEventListener('click', ()=> collabStart(collabNewCode(), true, {host:b.dataset.host})));
+    netLast = {peers, self};
+    const cards = [];
+    const card = (name, host, rooms, isSelf)=>
+      '<div class="net-peer"><div class="net-name">'+chatEscape(name)+'</div><div class="net-rooms">'+
+      (rooms||[]).map(c=> '<button type="button" class="net-room" data-host="'+(isSelf ? '' : host)+'" data-code="'+c+'">'+c+'</button>').join('')+
+      '<button type="button" class="net-new" data-host="'+(isSelf ? '' : host)+'">+ sala</button></div></div>';
+    if(self) cards.push(card('Este equipo', '', self.rooms, true));
+    peers.forEach(q=> cards.push(card(q.name||q.host, q.host+':'+q.port, q.rooms, false)));
+    const empty = !peers.length ? '<span class="net-empty">'+(scanning ? 'Buscando…' : 'No hay otros servidores cerca')+'</span>' : '';
+    netBox.innerHTML = '<div class="net-head"><span class="collab-label">Salas cerca</span>'+
+      '<button type="button" class="ib" id="net-scan" title="Buscar salas" aria-label="Buscar salas">'+icon('search', 18)+'</button></div>'+
+      cards.join('')+empty;
+    $('net-scan').classList.toggle('active', !!scanning);
+    $('net-scan').addEventListener('click', ()=> pollNet(true));
+    netBox.querySelectorAll('.net-room').forEach(b=> b.addEventListener('click', ()=>
+      collabStart(b.dataset.code, false, b.dataset.host ? {host:b.dataset.host} : null)));
+    netBox.querySelectorAll('.net-new').forEach(b=> b.addEventListener('click', ()=>
+      collabStart(collabNewCode(), true, b.dataset.host ? {host:b.dataset.host} : null)));
   };
-  const pollNet = ()=>{
-    if(!collab.lan || collab.on || !document.body.classList.contains('collab-open')) return;
+  const pollNet = force=>{
+    if(!collab.lan || collab.on || netBusy) return;
+    if(!force && !document.body.classList.contains('collab-open')) return;
+    netBusy = true;
+    if(force) renderNet(netLast.peers, netLast.self, true);
+    const t0 = performance.now();
     fetch('lan-peers', {cache:'no-store'}).then(r=> r.ok ? r.json() : null).then(d=>{
-      if(d && Array.isArray(d.peers)) renderNet(d.peers);
-    }).catch(()=>{});
+      const done = ()=>{ netBusy = false; if(d && Array.isArray(d.peers)) renderNet(d.peers, d.self || null, false); };
+      /* let the "searching" state be seen for a moment when asked by hand */
+      setTimeout(done, force ? Math.max(0, 700-(performance.now()-t0)) : 0);
+    }).catch(()=>{ netBusy = false; });
   };
   setInterval(pollNet, 3000);
   window.collabPollNet = pollNet;
@@ -7281,6 +7315,8 @@ function collabRenderPanel(){
     fetch('lan-info', {cache:'no-store'}).then(r=> r.ok ? r.json() : null).then(info=>{
       if(!info || !info.lan) return;
       collab.lan = info;
+      renderNet([], null, true);
+      pollNet(true);
       const el = $('collab-lan');
       el.hidden = false;
       el.innerHTML = '<span class="collab-label">Otros entran desde</span>' +
@@ -7451,15 +7487,24 @@ document.addEventListener('keydown', e=>{
   window.kyroSpeak = text=> say(text, false, false);
   window.kyroRead = text=> say(String(text).slice(0, 240), false, true);   // chat messages: the whole text
 
-  const btn = document.getElementById('voice-btn');
-  const paint = ()=>{ btn.classList.toggle('active', on); btn.setAttribute('aria-pressed', String(on)); };
-  btn.addEventListener('click', ()=>{
+  /* off by default; the switch lives in Settings (the robot) and next to the chat box */
+  const paint = ()=>{
+    document.querySelectorAll('#voice-btn,#chat-voice').forEach(b=>{
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+  };
+  const toggle = ()=>{
     on = !on;
     try{ localStorage.setItem('kyro-voice', on ? '1' : '0'); }catch(err){}
     paint();
-    if(on) load().then(()=> say('Hola', true));
+    if(on) load().then(()=> say('Voz', true));
     else if(current && current.abort) current.abort('off');
-  });
+  };
+  window.kyroVoiceToggle = toggle;
+  window.kyroVoiceOn = ()=> on;
+  document.getElementById('voice-btn').addEventListener('click', toggle);
+  document.getElementById('chat-voice').addEventListener('click', toggle);
   paint();
   if(on) load();
 })();
