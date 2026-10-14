@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- cutting mat -->
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="#2b6b58"/>
+  <g stroke="#4f9a82" stroke-width="1" stroke-linecap="round" opacity=".75">
+    <path d="M8 2v60M16 2v60M24 2v60M32 2v60M40 2v60M48 2v60M56 2v60"/>
+    <path d="M2 8h60M2 16h60M2 24h60M2 32h60M2 40h60M2 48h60M2 56h60"/>
+  </g>
+  <g stroke="#7fc2a8" stroke-width="1.6" stroke-linecap="round" opacity=".9">
+    <path d="M32 2v60M2 32h60"/>
+  </g>
+  <!-- cut marks in the corners -->
+  <g fill="none" stroke="#fffaf0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".85">
+    <path d="M9 14v-5h5M55 14v-5h-5M9 50v5h5M55 50v5h-5"/>
+  </g>
+  <!-- the zine: red page with its hard ink shadow -->
+  <g transform="rotate(-7 32 33)">
+    <rect x="19.5" y="13.5" width="26" height="36" rx="3" fill="#16130f"/>
+    <rect x="16" y="10" width="26" height="36" rx="3" fill="#d9381a" stroke="#16130f" stroke-width="3"/>
+        <!-- K -->
+    <path d="M23.75 18v20M23.75 29l9.5-11M26.75 26l7.5 12" fill="none" stroke="#fffaf0" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
