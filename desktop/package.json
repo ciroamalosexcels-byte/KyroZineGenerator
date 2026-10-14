@@ -1,6 +1,6 @@
 {
   "name": "kyro-zine-generator-desktop",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Kyro Zine Generator: app de escritorio con servidor para editar en la red local",
   "main": "main.js",
   "author": "Kyro",
