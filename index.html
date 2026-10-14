@@ -4160,21 +4160,38 @@ function buildHowtoSteps(){
     const rowH = 134/n;
     const barH = Math.min(54, rowH-9), barW = barH*Math.SQRT2;       // ISO landscape strip
     const lx = 24, rx = 300-24-barW;
+    const stripPair = i=>{
+      const col=i%L.spreads, row=Math.floor(i/L.spreads);
+      return [p1.front[row][col*2], p1.front[row][col*2+1]];
+    };
+    const strip = (x,y,pair,depth,badge)=>{
+      let s='';
+      for(let d=depth;d>=1;d--){
+        s+='<rect x="'+(x+d*3).toFixed(1)+'" y="'+(y-d*3).toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+barH.toFixed(1)+'" fill="#fff" stroke="'+INK+'" stroke-width="1.4"/>'+
+           '<line x1="'+(x+d*3+barW/2).toFixed(1)+'" y1="'+(y-d*3).toFixed(1)+'" x2="'+(x+d*3+barW/2).toFixed(1)+'" y2="'+(y-d*3+barH).toFixed(1)+'" stroke="'+INK+'" stroke-width="1.1"/>';
+      }
+      pair.forEach((num,j)=>{
+        const px=x+j*barW/2, cover=num===1||num===state.pageCount;
+        s+='<rect x="'+px.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(barW/2).toFixed(1)+'" height="'+barH.toFixed(1)+'" fill="'+(cover?HL:SHEET)+'" stroke="'+INK+'" stroke-width="1.6"/>'+
+           '<text x="'+(px+barW/4).toFixed(1)+'" y="'+(y+barH/2+4).toFixed(1)+'" font-size="'+Math.max(7,Math.min(13,barH*.38)).toFixed(1)+'" font-weight="800" text-anchor="middle" fill="'+(cover?RED:INK)+'" font-family="Archivo,sans-serif">'+num+'</text>';
+      });
+      if(badge){
+        s+='<circle cx="'+(x-7).toFixed(1)+'" cy="'+(y+barH/2).toFixed(1)+'" r="8" fill="'+RED+'" stroke="'+INK+'" stroke-width="1.2"/>'+
+           '<text x="'+(x-7).toFixed(1)+'" y="'+(y+barH/2+3.5).toFixed(1)+'" font-size="9" font-weight="800" text-anchor="middle" fill="#fff" font-family="Archivo,sans-serif">'+badge+'</text>';
+      }
+      return s;
+    };
     let g = '';
     for(let i=0;i<n;i++){
       const y = 8 + i*rowH + (rowH-barH)/2;
-      for(let d=2; d>=0; d--){
-        g += '<rect x="'+(lx+d*3)+'" y="'+(y-d*3+3)+'" width="'+barW.toFixed(1)+'" height="'+barH.toFixed(1)+'" fill="'+(d===0 ? (i===0?HL:SHEET) : '#fff')+'" stroke="'+INK+'" stroke-width="1.6"/>';
-      }
-      g += '<text x="'+(lx+barW/2).toFixed(1)+'" y="'+(y+3+barH/2+5).toFixed(1)+'" font-size="15" font-weight="800" text-anchor="middle" fill="'+INK+'" font-family="Archivo,sans-serif">'+(i+1)+'</text>';
+      g += strip(lx,y,stripPair(i),2,i+1);
     }
     const mx = 150, my = 75;
     g += '<path d="M'+(mx-14)+' '+my+' H '+(mx+14)+'" stroke="'+RED+'" stroke-width="3.2" stroke-linecap="round"/>' + arrowHead(mx+15, my, 1, 0, 10, RED, 3.2);
     const top = 75 - (barH*n)/2;
     for(let i=0;i<n;i++){
       const y = top + i*barH;
-      g += '<rect x="'+rx.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+barH.toFixed(1)+'" fill="'+(i===0?HL:SHEET)+'" stroke="'+INK+'" stroke-width="1.6"/>'+
-           '<text x="'+(rx+barW/2).toFixed(1)+'" y="'+(y+barH/2+5).toFixed(1)+'" font-size="15" font-weight="800" text-anchor="middle" fill="'+INK+'" font-family="Archivo,sans-serif">'+(i+1)+'</text>';
+      g += strip(rx,y,stripPair(i),0,null);
     }
     steps.push({title:'Juntá las tiras en orden', svg: stepSVG(g),
       text:'Tenés ' + L.slots + ' montones de tiras: en cada uno están las tiras que salieron de la misma posición (los círculos numerados del paso anterior). Apilá un montón sobre otro en orden: el 1 arriba, el 2 debajo, y así. Queda un solo montón con la tapa arriba de todo.'});
