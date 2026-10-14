@@ -333,6 +333,40 @@ select.plain-select{padding:.45rem 2.6rem .45rem 1rem;border:none;border-radius:
 .page-settings-menu .mini-btn.collab-leave{background:transparent;color:var(--stamp);box-shadow:inset 0 0 0 2px var(--stamp)}
 .page-settings-menu .mini-btn.collab-leave:hover{background:var(--stamp);color:#fff;box-shadow:inset 0 0 0 2px var(--stamp)}
 #collab-btn.live{box-shadow:0 0 0 3px #2b6b58}
+#collab-btn{position:relative}
+#collab-btn.unread::after{content:"";position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:var(--hl);box-shadow:0 0 0 2px var(--text)}
+#collab-side{--surface:var(--sidebar);flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:.8rem .8rem .6rem;display:none;flex-direction:column;gap:.8rem;box-sizing:border-box}
+body.collab-open #collab-side{display:flex}
+body.collab-open #edit-panel{display:none}
+#collab-side *{min-width:0;box-sizing:border-box}
+#collab-side [hidden]{display:none !important}
+#collab-side .ps-head{gap:.5rem;flex-wrap:wrap}
+#collab-side .side-block{display:flex;flex-direction:column;gap:.7rem}
+#collab-live.side-block{flex:1;min-height:0}
+#collab-side .mini-btn{background:var(--text);color:var(--bg-card);box-shadow:3px 3px 0 var(--stamp);width:100%}
+#collab-side .mini-btn:hover{background:var(--stamp);color:#fff;box-shadow:4px 5px 0 var(--text)}
+#collab-side .mini-btn.collab-big{background:var(--stamp);color:#fff;box-shadow:3px 3px 0 var(--text);height:42px}
+#collab-side .mini-btn.collab-big:hover{background:var(--text);box-shadow:4px 5px 0 var(--stamp)}
+#collab-side .collab-row .mini-btn{width:auto}
+#collab-side #collab-listen.active{background:var(--stamp);color:#fff}
+#collab-side #collab-listen.hearing{box-shadow:0 0 0 4px var(--hl),3px 3px 0 var(--text)}
+#collab-side .mini-btn.collab-leave{background:transparent;color:var(--stamp);box-shadow:inset 0 0 0 2px var(--stamp)}
+#collab-side .mini-btn.collab-leave:hover{background:var(--stamp);color:#fff;box-shadow:inset 0 0 0 2px var(--stamp)}
+#collab-side .ticket-main{padding:.7rem .5rem .7rem .9rem;gap:.4rem}
+#collab-side .ticket-main .collab-code{font-size:1.2rem;letter-spacing:.06em}
+#collab-side .ticket-body{min-height:92px}
+.ticket-project{font-weight:800;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;opacity:.55;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.collab-tools{display:flex;gap:.5rem;flex-wrap:wrap}
+.collab-tools .ib.active{background:var(--text);color:var(--bg-card)}
+#collab-qr{align-self:center;width:min(200px,100%);height:auto;border-radius:10px;box-shadow:3px 3px 0 var(--text);image-rendering:pixelated;background:#fff}
+.chat{display:flex;flex-direction:column;gap:.5rem;flex:1;min-height:150px}
+#chat-log{flex:1;min-height:90px;overflow-y:auto;display:flex;flex-direction:column;gap:.4rem;padding:.55rem;border-radius:12px;
+  background:var(--bg-card);box-shadow:inset 2px 2px 0 rgba(22,19,15,.1)}
+.chat-msg{font-size:.84rem;line-height:1.3;word-break:break-word}
+.chat-who{font-weight:900;margin-right:.35rem}
+.chat-msg.mine .chat-txt{opacity:.8}
+#chat-form{display:flex;gap:.4rem;align-items:center}
+#chat-form .collab-input{height:38px}
 .export-adv{margin-top:.9rem;font-size:.9rem}
 .export-adv summary{cursor:pointer;font-weight:700;color:var(--muted)}
 #export-preset{display:flex;width:100%;gap:.5rem;padding:4px}
@@ -762,49 +796,6 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
   </div>
 </header>
 
-<div class="page-settings-menu collab-menu" id="collab-panel" hidden>
-  <div class="ps-head">
-    <div class="collab-title"><span class="ps-main">Colaborar</span><span class="collab-chip" id="collab-chip">en vivo</span></div>
-    <div class="ps-head-actions">
-      <button type="button" class="modal-close" id="collab-close" title="Cerrar" aria-label="Cerrar" data-icon="x" data-size="18"></button>
-    </div>
-  </div>
-  <div class="ps-block" id="collab-off">
-    <label class="collab-field">
-      <span class="collab-label">Tu nombre</span>
-      <input class="collab-input" id="collab-name" type="text" maxlength="24" placeholder="Nombre" autocomplete="off">
-    </label>
-    <button class="mini-btn collab-big" id="collab-create" type="button">Crear sala nueva</button>
-    <div class="collab-or">o entrá a una</div>
-    <div class="collab-row">
-      <input class="collab-input" id="collab-code" type="text" maxlength="12" placeholder="CÓDIGO" autocomplete="off" aria-label="Código de sala">
-      <button class="mini-btn" id="collab-enter" type="button">Entrar</button>
-    </div>
-    <div class="collab-lan" id="collab-lan" hidden></div>
-    <button class="mini-btn" id="direct-open" type="button">Conexión directa · sin internet</button>
-  </div>
-  <div class="ps-block" id="collab-live" hidden>
-    <div class="ticket">
-      <div class="ticket-body">
-        <div class="ticket-main">
-          <div class="collab-code" id="collab-code-label"></div>
-          <div class="ticket-rule"></div>
-        </div>
-        <div class="ticket-stub"><span class="ticket-vert" id="ticket-project"></span></div>
-      </div>
-    </div>
-    <div class="collab-field">
-      <span class="collab-label">Conectados</span>
-      <div id="collab-peers"></div>
-    </div>
-    <button class="mini-btn collab-big" id="collab-invite" type="button" hidden>Invitar a otra persona</button>
-    <div class="collab-actions">
-      <button class="mini-btn" id="collab-copy" type="button">Copiar enlace</button>
-      <button class="mini-btn collab-leave" id="collab-leave" type="button">Salir</button>
-    </div>
-  </div>
-</div>
-
 <div class="page-settings-menu" id="page-settings-menu" hidden>
   <div class="ps-head">
     <span class="ps-main">Ajustes</span>
@@ -869,12 +860,12 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
           <button type="button" class="tb active" data-tool="move" title="Mover (V)" data-icon="pointer" data-size="20"></button>
           <button type="button" class="tb" data-tool="transform" title="Escalar y rotar (R)" data-icon="scaling" data-size="20"></button>
           <button type="button" class="tb" data-tool="crop" title="Recortar la foto (C)" data-icon="crop" data-size="20"></button>
-          <button type="button" class="tb" data-tool="select" title="Selección (S): marco, círculo, lazo o pluma" data-icon="square-dashed" data-size="20"></button>
+          <button type="button" class="tb" data-tool="select" title="Selección (S)" data-icon="square-dashed" data-size="20"></button>
           <button type="button" class="tb" data-tool="text" title="Texto (T)" data-icon="type" data-size="20"></button>
           <button type="button" class="tb" data-tool="brush" title="Pincel (B)" data-icon="pencil" data-size="20"></button>
           <button type="button" class="tb" data-tool="eraser" title="Goma (E)" data-icon="eraser" data-size="20"></button>
           <button type="button" class="tb" data-tool="hand" title="Mano (H)" data-icon="hand" data-size="20"></button>
-          <button type="button" class="tb" data-tool="zoom" title="Lupa (Z) — clic acerca, clic derecho aleja" data-icon="zoom-in" data-size="20"></button>
+          <button type="button" class="tb" data-tool="zoom" title="Lupa (Z)" data-icon="zoom-in" data-size="20"></button>
         </div>
         <div class="tool-options" id="tool-options"></div>
       </div>
@@ -891,6 +882,55 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
       <span class="mobile-panel-toggle" data-icon="chevron-down" data-size="18"></span>
     </button>
     <div id="edit-panel"></div>
+    <div id="collab-side" hidden>
+      <div class="ps-head">
+        <div class="collab-title"><span class="ps-main">Colaborar</span><span class="collab-chip" id="collab-chip">por internet</span></div>
+        <button type="button" class="modal-close" id="collab-close" title="Volver a las capas" aria-label="Volver a las capas" data-icon="x" data-size="18"></button>
+      </div>
+      <div class="side-block" id="collab-off">
+        <label class="collab-field">
+          <span class="collab-label">Tu nombre</span>
+          <input class="collab-input" id="collab-name" type="text" maxlength="24" placeholder="Nombre" autocomplete="off">
+        </label>
+        <button class="mini-btn collab-big" id="collab-create" type="button">Crear sala nueva</button>
+        <div class="collab-or">o entrá a una</div>
+        <div class="collab-row">
+          <input class="collab-input" id="collab-code" type="text" maxlength="12" placeholder="CÓDIGO" autocomplete="off" aria-label="Código de sala">
+          <button class="mini-btn" id="collab-enter" type="button">Entrar</button>
+        </div>
+        <button class="mini-btn" id="collab-listen" type="button" data-icon="mic" data-size="16">Escuchar código</button>
+        <button class="mini-btn" id="direct-open" type="button">Conexión directa</button>
+        <div class="collab-lan" id="collab-lan" hidden></div>
+      </div>
+      <div class="side-block" id="collab-live" hidden>
+        <div class="ticket">
+          <div class="ticket-body">
+            <div class="ticket-main">
+              <div class="collab-code" id="collab-code-label"></div>
+              <div class="ticket-rule"></div>
+              <div class="ticket-project" id="ticket-project"></div>
+            </div>
+            <div class="ticket-stub"></div>
+          </div>
+        </div>
+        <div class="collab-tools">
+          <button type="button" class="ib" id="collab-qr-btn" title="Mostrar QR" aria-label="Mostrar QR" data-icon="qr-code" data-size="18"></button>
+          <button type="button" class="ib" id="collab-copy" title="Copiar enlace" aria-label="Copiar enlace" data-icon="copy" data-size="18"></button>
+          <button type="button" class="ib" id="collab-emit" title="Emitir código" aria-label="Emitir código por sonido" data-icon="volume" data-size="18"></button>
+          <button type="button" class="ib" id="collab-invite" title="Invitar a otra persona" aria-label="Invitar a otra persona" data-icon="user-plus" data-size="18" hidden></button>
+        </div>
+        <canvas id="collab-qr" hidden></canvas>
+        <div id="collab-peers"></div>
+        <div class="chat">
+          <div id="chat-log"></div>
+          <form id="chat-form" autocomplete="off">
+            <input class="collab-input" id="chat-input" type="text" maxlength="400" placeholder="Escribí un mensaje" aria-label="Mensaje">
+            <button type="submit" class="ib" id="chat-send" title="Enviar" aria-label="Enviar" data-icon="send" data-size="18"></button>
+          </form>
+        </div>
+        <button class="mini-btn collab-leave" id="collab-leave" type="button">Salir de la sala</button>
+      </div>
+    </div>
     <div class="view-zoom" title="Zoom">
         <button type="button" id="vz-out" aria-label="Alejar vista" data-icon="zoom-out" data-size="18"></button>
         <span id="vz-label">100%</span>
@@ -1759,6 +1799,11 @@ const ICONS = {
   'layers':'<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
   'users':'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   'bot':'<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
+  'qr-code':'<rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/>',
+  'volume':'<path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/>',
+  'mic':'<path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" rx="3"/>',
+  'send':'<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>',
+  'user-plus':'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/>',
   'eye-off':'<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
   'arrow-up':'<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
   'arrow-down':'<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
@@ -2623,7 +2668,7 @@ function selPanelHTML(){
       <div class="group">
         <span class="group-title">Contenido</span>
         <div class="row-inline">
-          ${btn('delete','trash','Borrar lo de adentro (Supr)')}${btn('crop','crop','Recortar fuera: deja solo lo de adentro')}
+          ${btn('delete','trash','Borrar lo de adentro (Supr)')}${btn('crop','crop','Recortar fuera')}
           ${onImage ? btn('lift','layers','Pasar a capa nueva') : ''}
         </div>
       </div>
@@ -6059,6 +6104,12 @@ function collabRecv(p){
   collab.chain = collab.chain.then(()=> collabHandle(p.k, data, p.from)).catch(()=>{});
 }
 async function collabHandle(k, d, from){
+  if(k==='chat'){
+    if(d && typeof d.text==='string'){
+      chatAdd({name:String(d.name||'').slice(0,24), color:/^#[0-9a-fA-F]{3,8}$/.test(d.color||'') ? d.color : '#888', text:d.text.slice(0,400)});
+    }
+    return;
+  }
   if(k==='cursor'){
     collab.cursors[from] = Object.assign({}, d, {t:Date.now()});
     collabOverlaySoon();
@@ -6682,9 +6733,204 @@ function collabLeave(silent){
   collab.on = false; collab.awaiting = false; collab.tx = null;
   collab.peers = {}; collab.cursors = {}; collab.suspendFile = false; collab.pending = [];
   if(location.hash.indexOf('sala=')>=0) window.history.replaceState(null, '', location.pathname+location.search);
+  collab.chat = [];
+  chatRender();
+  if(window.collabStopEmit) window.collabStopEmit();
+  document.getElementById('collab-qr').hidden = true;
   collabRenderPanel();
   renderStageOverlay(document.getElementById('stage-canvas'));
   if(!silent) showToast('Saliste de la sala.');
+}
+
+/* ----- chat ----- */
+function chatEscape(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function chatRender(){
+  const log = document.getElementById('chat-log');
+  if(!log) return;
+  log.innerHTML = (collab.chat||[]).map(m=>
+    '<div class="chat-msg'+(m.mine ? ' mine' : '')+'"><span class="chat-who" style="color:'+(m.color||'#888')+'">'+
+    chatEscape(m.mine ? 'Vos' : m.name)+'</span><span class="chat-txt">'+chatEscape(m.text)+'</span></div>').join('');
+  log.scrollTop = log.scrollHeight;
+}
+function chatAdd(m){
+  collab.chat = collab.chat || [];
+  collab.chat.push(m);
+  if(collab.chat.length>200) collab.chat.shift();
+  chatRender();
+  if(!m.mine){
+    if(!document.body.classList.contains('collab-open')) document.getElementById('collab-btn').classList.add('unread');
+    if(window.kyroRead) window.kyroRead((m.name||'')+' dice '+m.text);
+  }
+}
+function chatSend(text){
+  text = String(text||'').trim().slice(0, 400);
+  if(!text || !collab.on) return;
+  const m = {name:collab.name, color:collab.color, text, ts:Date.now()};
+  collabSend('chat', m);
+  chatAdd(Object.assign({mine:true}, m));
+}
+
+/* ----- código de sala por sonido -----
+   One device plays a short melody and another one listens to it with the
+   microphone. The room code (letters + digits, 5 bits each) is sent as a
+   frame of tones: a sync tone, a length byte, the characters, a checksum.
+   Every byte is two symbols (4 bits, one of 16 frequencies). Consecutive
+   symbols alternate between two interleaved banks of frequencies, so two
+   equal nibbles in a row still produce a visible change of tone. */
+const SND = {
+  alphabet:'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
+  sync:1500, base:2000, step:160, bankOff:80,
+  symSec:0.12, syncSec:0.32, hopMs:20
+};
+function sndNibbles(code){
+  const idx = [...String(code||'').toUpperCase()].map(c=> SND.alphabet.indexOf(c));
+  if(!idx.length || idx.length>12 || idx.some(i=> i<0)) return null;
+  const out = [];
+  const byte = b=>{ out.push((b>>4)&15, b&15); };
+  byte(idx.length);
+  idx.forEach(byte);
+  byte(idx.reduce((a,b)=> a+b+1, 0) & 255);
+  return out;
+}
+function sndFreq(nibble, i){ return SND.base + nibble*SND.step + (i%2 ? SND.bankOff : 0); }
+
+/* ---- decoder: feed it raw samples with a timestamp, it calls onCode ---- */
+function sndDecoder(sampleRate, onCode){
+  const classes = [SND.sync];
+  for(let bank=0;bank<2;bank++) for(let k=0;k<16;k++) classes.push(SND.base + k*SND.step + bank*SND.bankOff);
+  const win = new Float32Array(2048);
+  for(let i=0;i<win.length;i++) win[i] = 0.5 - 0.5*Math.cos(2*Math.PI*i/(win.length-1));
+  const amps = new Float32Array(classes.length);
+  let cur = -1, curStart = 0, lastT = 0;
+  let state = 'wait', syms = [], need = 0;
+  const recent = [];                       // last class readings, for a 3-point median
+
+  function classify(buf){
+    const N = win.length, off = Math.max(0, buf.length-N);
+    let energy = 0;
+    for(let c=0;c<classes.length;c++){
+      const w = 2*Math.PI*classes[c]/sampleRate, coeff = 2*Math.cos(w);
+      let s0 = 0, s1 = 0, s2 = 0;
+      for(let i=0;i<N;i++){ s0 = buf[off+i]*win[i] + coeff*s1 - s2; s2 = s1; s1 = s0; }
+      const p = s1*s1 + s2*s2 - coeff*s1*s2;
+      amps[c] = 4*Math.sqrt(Math.max(0,p))/N;   // ≈ amplitude of a pure tone (Hann window)
+      energy += amps[c];
+    }
+    let best = 0;
+    for(let c=1;c<classes.length;c++) if(amps[c]>amps[best]) best = c;
+    if(amps[best] < 0.012) return -1;
+    let second = 0;
+    for(let c=0;c<classes.length;c++) if(c!==best && Math.abs(classes[c]-classes[best])>=70 && amps[c]>second) second = amps[c];
+    if(amps[best] < 2.2*second) return -1;
+    return best;
+  }
+  function reset(){ state = 'wait'; syms = []; need = 0; }
+  function finish(cls, ms){
+    if(cls<0) return;
+    if(state==='wait'){
+      if(cls===0 && ms>=160) { state = 'data'; syms = []; need = 0; }
+      return;
+    }
+    if(cls===0){ if(ms>=160){ syms = []; need = 0; } return; }
+    if(ms<45) return;                      // a glitch, not a symbol
+    syms.push((cls-1)%16);
+    if(syms.length===2){
+      const len = syms[0]*16 + syms[1];
+      if(len<1 || len>12){ reset(); return; }
+      need = 2 + 2*len + 2;
+    }
+    if(need && syms.length>=need){
+      const bytes = [];
+      for(let i=0;i<syms.length;i+=2) bytes.push(syms[i]*16 + syms[i+1]);
+      const len = bytes[0], chars = bytes.slice(1, 1+len), chk = bytes[1+len];
+      const sum = chars.reduce((a,b)=> a+b+1, 0) & 255;
+      reset();
+      if(chk===sum && chars.every(i=> i<SND.alphabet.length)) onCode(chars.map(i=> SND.alphabet[i]).join(''));
+    }
+  }
+  return {
+    push(buf, tMs){
+      let c = classify(buf);
+      recent.push(c); if(recent.length>3) recent.shift();
+      if(recent.length===3){        // median of three: one odd reading doesn't split a symbol
+        const [a,b,d] = recent;
+        c = (a===b || a===d) ? a : (b===d ? b : b);
+      }
+      if(c!==cur){
+        if(cur>=0) finish(cur, tMs - curStart);
+        cur = c; curStart = tMs;
+      }
+      if(c<0 && state==='data' && tMs-curStart>700) reset();
+      lastT = tMs;
+    },
+    reset
+  };
+}
+
+/* ---- emitter: plays the frame over and over until stopped ---- */
+function sndStartEmit(code){
+  const nib = sndNibbles(code);
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!nib || !AC) return null;
+  const ctx = new AC();
+  const gain = ctx.createGain();
+  gain.gain.value = 0;
+  gain.connect(ctx.destination);
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.connect(gain);
+  osc.start();
+  const frameSec = SND.syncSec + nib.length*SND.symSec + 0.9;
+  let next = ctx.currentTime + 0.15, stopped = false;
+  const tone = (t, f, sec)=>{
+    osc.frequency.setValueAtTime(f, t);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.7, t+0.012);
+    gain.gain.setValueAtTime(0.7, t+sec-0.012);
+    gain.gain.linearRampToValueAtTime(0, t+sec);
+  };
+  const schedule = ()=>{
+    if(stopped) return;
+    let t = next;
+    tone(t, SND.sync, SND.syncSec); t += SND.syncSec;
+    nib.forEach((n,i)=>{ tone(t, sndFreq(n,i), SND.symSec); t += SND.symSec; });
+    next += frameSec;
+  };
+  schedule(); schedule();
+  const timer = setInterval(()=>{ if(ctx.currentTime > next - frameSec) schedule(); }, 250);
+  return ()=>{
+    stopped = true;
+    clearInterval(timer);
+    try{ osc.stop(); ctx.close(); }catch(err){}
+  };
+}
+
+/* ---- listener: microphone -> decoder ---- */
+async function sndStartListen(onCode, onLevel){
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('unsupported');
+  const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
+  const ctx = new AC();
+  const src = ctx.createMediaStreamSource(stream);
+  const an = ctx.createAnalyser();
+  an.fftSize = 2048;
+  src.connect(an);
+  const buf = new Float32Array(an.fftSize);
+  const dec = sndDecoder(ctx.sampleRate, code=>{ onCode(code); });
+  const timer = setInterval(()=>{
+    an.getFloatTimeDomainData(buf);
+    dec.push(buf, performance.now());
+    if(onLevel){
+      let s = 0;
+      for(let i=0;i<buf.length;i++) s += buf[i]*buf[i];
+      onLevel(Math.sqrt(s/buf.length));
+    }
+  }, SND.hopMs);
+  return ()=>{
+    clearInterval(timer);
+    stream.getTracks().forEach(t=> t.stop());
+    try{ ctx.close(); }catch(err){}
+  };
 }
 
 /* ----- panel ----- */
@@ -6702,6 +6948,8 @@ function collabRenderPanel(){
   document.getElementById('collab-code-label').textContent = isDirect ? 'DIRECTA' : collab.code;
   document.getElementById('ticket-project').textContent = String(projectName||'proyecto').replace(/\.kyro$/i, '');
   document.getElementById('collab-copy').hidden = isDirect;
+  document.getElementById('collab-qr-btn').hidden = isDirect;
+  document.getElementById('collab-emit').hidden = isDirect;
   document.getElementById('collab-invite').hidden = !(isDirect && window.direct && direct.role==='host');
   const peers = collab.peers;
   document.getElementById('collab-peers').innerHTML = Object.keys(peers).sort().map(id=>{
@@ -6713,36 +6961,75 @@ function collabRenderPanel(){
   }).join('');
 }
 (function initCollabPanel(){
-  const btn = document.getElementById('collab-btn'), panel = document.getElementById('collab-panel');
-  try{ document.getElementById('collab-name').value = localStorage.getItem('kyro-collab-name') || ''; }catch(err){}
-  const open = ()=>{
-    panel.hidden = false;
-    collabRenderPanel();
-    const r = btn.getBoundingClientRect(), w = panel.offsetWidth;
-    /* its right edge lines up with the button, and it never leaves the window */
-    panel.style.left = Math.max(8, Math.min(window.innerWidth-w-8, r.right-w))+'px';
-    panel.style.top = r.bottom+10+'px';
+  const $ = id=> document.getElementById(id);
+  const btn = $('collab-btn');
+  try{ $('collab-name').value = localStorage.getItem('kyro-collab-name') || ''; }catch(err){}
+  /* the collaboration panel takes the place of the layers on the right */
+  const setOpen = on=>{
+    document.body.classList.toggle('collab-open', on);
+    $('collab-side').hidden = !on;
+    btn.classList.remove('unread');
+    if(on){ collabRenderPanel(); chatRender(); }
   };
-  btn.addEventListener('click', ()=>{ if(panel.hidden) open(); else panel.hidden = true; });
-  document.getElementById('collab-close').addEventListener('click', ()=>{ panel.hidden = true; });
-  document.getElementById('collab-create').addEventListener('click', ()=> collabStart(collabNewCode(), true));
-  document.getElementById('collab-enter').addEventListener('click', ()=> collabStart(document.getElementById('collab-code').value, false));
-  document.getElementById('collab-leave').addEventListener('click', ()=> collabLeave());
-  collabRenderPanel();
-  document.getElementById('collab-copy').addEventListener('click', async ()=>{
+  window.collabSetOpen = setOpen;
+  btn.addEventListener('click', ()=> setOpen(!document.body.classList.contains('collab-open')));
+  $('collab-close').addEventListener('click', ()=> setOpen(false));
+  $('collab-create').addEventListener('click', ()=> collabStart(collabNewCode(), true));
+  $('collab-enter').addEventListener('click', ()=> collabStart($('collab-code').value, false));
+  $('collab-leave').addEventListener('click', ()=> collabLeave());
+  $('collab-copy').addEventListener('click', async ()=>{
     try{ await navigator.clipboard.writeText(collabLink()); showToast('Enlace copiado.'); }
     catch(err){ window.prompt('Copiá este enlace', collabLink()); }
   });
-  document.addEventListener('pointerdown', e=>{
-    if(panel.hidden || panel.contains(e.target) || e.target.closest('#collab-btn') || e.target.closest('.modal')) return;
-    panel.hidden = true;
+  /* QR of the invitation link */
+  $('collab-qr-btn').addEventListener('click', async ()=>{
+    const cv = $('collab-qr');
+    if(!cv.hidden){ cv.hidden = true; $('collab-qr-btn').classList.remove('active'); return; }
+    try{
+      await loadScriptOnce(DIRECT_QR_LIB, ()=> typeof window.qrcode==='function');
+      directDrawQR(cv, collabLink());
+      cv.hidden = false;
+      $('collab-qr-btn').classList.add('active');
+    }catch(err){ showToast('No pude armar el QR (hace falta internet la primera vez).'); }
+  });
+  /* the code, by sound: one device emits, the other listens */
+  let stopEmit = null, stopListen = null;
+  const emitBtn = $('collab-emit'), listenBtn = $('collab-listen');
+  window.collabStopEmit = ()=>{ if(stopEmit){ stopEmit(); stopEmit = null; } emitBtn.classList.remove('active'); };
+  emitBtn.addEventListener('click', ()=>{
+    if(stopEmit){ window.collabStopEmit(); return; }
+    if(!collab.on || collab.code==='DIRECTO') return;
+    stopEmit = sndStartEmit(collab.code);
+    if(!stopEmit){ showToast('No pude emitir el sonido.'); return; }
+    emitBtn.classList.add('active');
+    showToast('Emitiendo el código. En el otro dispositivo tocá Escuchar código.');
+  });
+  const stopHearing = ()=>{ if(stopListen){ stopListen(); stopListen = null; } listenBtn.classList.remove('active','hearing'); };
+  listenBtn.addEventListener('click', async ()=>{
+    if(stopListen){ stopHearing(); return; }
+    try{
+      stopListen = await sndStartListen(code=>{
+        stopHearing();
+        $('collab-code').value = code;
+        showToast('Código recibido: '+code);
+        collabStart(code, false);
+      }, level=> listenBtn.classList.toggle('hearing', level>0.02));
+      listenBtn.classList.add('active');
+      showToast('Escuchando… acercá el dispositivo que emite el código.');
+    }catch(err){ showToast('No pude usar el micrófono.'); }
+  });
+  /* chat */
+  $('chat-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    chatSend($('chat-input').value);
+    $('chat-input').value = '';
   });
   /* served by the desktop app: rooms live on this network, no internet needed */
   if(location.protocol==='http:'){
     fetch('lan-info', {cache:'no-store'}).then(r=> r.ok ? r.json() : null).then(info=>{
       if(!info || !info.lan) return;
       collab.lan = info;
-      const el = document.getElementById('collab-lan');
+      const el = $('collab-lan');
       el.hidden = false;
       el.innerHTML = '<span class="collab-label">Otros entran desde</span>' +
         (info.urls||[]).map(u=> '<button type="button" class="collab-url" data-url="'+u+'" title="Copiar"><span>'+u.replace(/^https?:\/\//,'')+'</span></button>').join('');
@@ -6753,11 +7040,12 @@ function collabRenderPanel(){
       collabRenderPanel();
     }).catch(()=>{});
   }
+  collabRenderPanel();
   /* opened from an invitation link */
   const m = location.hash.match(/sala=([A-Za-z0-9]{4,12})/);
   if(m){
-    document.getElementById('collab-code').value = m[1].toUpperCase();
-    setTimeout(()=>{ open(); showToast('Te invitaron a una sala: poné tu nombre y tocá Entrar.'); }, 600);
+    $('collab-code').value = m[1].toUpperCase();
+    setTimeout(()=>{ setOpen(true); showToast('Te invitaron a una sala: poné tu nombre y tocá Entrar.'); }, 600);
   }
 })();
 
@@ -6807,7 +7095,7 @@ document.addEventListener('keydown', e=>{
     if(!text){ hide(); return; }
     if(el===cur) return;
     cur = el;
-    if(window.kyroSpeak && text.length<=40) window.kyroSpeak(text);
+    if(window.kyroSpeak) window.kyroSpeak(text);
     tip.textContent = text;
     tip.classList.add('show');
     const r = el.getBoundingClientRect(), tr = tip.getBoundingClientRect();
@@ -6883,23 +7171,22 @@ document.addEventListener('keydown', e=>{
     }
     return out;
   }
-  function phonetic(text){
-    const t = String(text).toLowerCase()
-      .replace(/\([^)]*\)/g, ' ')
-      .split(':')[0]
-      .replace(/[^a-záéíóúüñ0-9\s]/g, ' ');
+  function phonetic(text, whole){
+    let t = String(text).toLowerCase().replace(/\([^)]*\)/g, ' ');
+    if(!whole) t = t.split(':')[0];
+    t = t.replace(/[^a-záéíóúüñ0-9\s]/g, ' ');
     return t.split(/\s+/).filter(Boolean).map(wordToPhonemes).filter(Boolean).join(' ');
   }
   window.kyroPhonetic = phonetic;     // handy for checking how a label gets read
 
   const load = ()=> loadScriptOnce(SAM_LIB, ()=> typeof window.SamJs==='function').then(()=>{ ready = true; }).catch(()=>{ ready = false; });
-  function say(text, force){
+  function say(text, force, whole){
     if(!(on || force)) return;
-    const ph = phonetic(text);
+    const ph = phonetic(text, whole);
     const now = performance.now();
-    if(!ph || (ph===last && now-lastT<900)) return;
+    if(!ph || (!whole && ph.length>70) || (ph===last && now-lastT<900)) return;
     last = ph; lastT = now;
-    if(!ready){ load().then(()=>{ if(ready){ last = ''; say(text, force); } }); return; }
+    if(!ready){ load().then(()=>{ if(ready){ last = ''; say(text, force, whole); } }); return; }
     try{
       if(current && current.abort) current.abort('next');
       const sam = new window.SamJs({speed:70, pitch:60, throat:128, mouth:128, phonetic:true});
@@ -6907,7 +7194,8 @@ document.addEventListener('keydown', e=>{
       if(current && current.catch) current.catch(()=>{});
     }catch(err){ /* sin audio: no pasa nada */ }
   }
-  window.kyroSpeak = text=> say(text, false);
+  window.kyroSpeak = text=> say(text, false, false);
+  window.kyroRead = text=> say(String(text).slice(0, 240), false, true);   // chat messages: the whole text
 
   const btn = document.getElementById('voice-btn');
   const paint = ()=>{ btn.classList.toggle('active', on); btn.setAttribute('aria-pressed', String(on)); };
