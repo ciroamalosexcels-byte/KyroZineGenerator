@@ -22,6 +22,12 @@ npm run serve     # solo el servidor, sin ventana (usa Node)
 ```
 `npm run prepare-app` copia `index.html` y `favicon.svg` a `desktop/app/`.
 
+## Servidores en la red
+Cada programa anuncia por UDP (puerto 3738, broadcast) su nombre y las salas con
+gente. En **Colaborar**, sin sala, aparece la lista **En tu red** con los demás
+servidores: tocás el código de una sala para entrar, o **+ sala** para crear una
+en esa computadora. Si Windows pregunta por el firewall, aceptá en redes privadas.
+
 ## Qué hace el servidor (`server.js`)
 - Sirve `index.html` y `favicon.svg`.
 - `WS /ws?room=CODIGO&id=ID`: reenvía los mensajes entre quienes están en la sala
@@ -29,4 +35,5 @@ npm run serve     # solo el servidor, sin ventana (usa Node)
 - `PUT|GET /asset/rooms/CODIGO/<sha1>.<ext>`: guarda en memoria las imágenes de
   la sala (máx. 30 MB cada una, 600 MB en total) mientras el programa está abierto.
 - `GET /lan-info`: direcciones de la red para compartir.
+- `GET /lan-peers`: otros servidores descubiertos y sus salas.
 - No guarda proyectos: cada persona guarda el suyo (`.kyro`).

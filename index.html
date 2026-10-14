@@ -334,6 +334,17 @@ select.plain-select{padding:.45rem 2.6rem .45rem 1rem;border:none;border-radius:
 .page-settings-menu .mini-btn.collab-leave:hover{background:var(--stamp);color:#fff;box-shadow:inset 0 0 0 2px var(--stamp)}
 #collab-btn.live{box-shadow:0 0 0 3px #2b6b58}
 #collab-btn{position:relative}
+.collab-net{display:flex;flex-direction:column;gap:.5rem}
+.net-peer{display:flex;flex-direction:column;gap:.4rem;padding:.6rem;border-radius:14px;background:var(--bg-card);box-shadow:3px 3px 0 var(--text)}
+.net-name{display:flex;align-items:center;gap:.45rem;font-weight:900;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.net-name::before{content:"";width:10px;height:10px;border-radius:50%;background:#2b6b58;box-shadow:0 0 0 2px var(--text);flex:0 0 auto}
+.net-rooms{display:flex;flex-wrap:wrap;gap:.35rem}
+.net-room{padding:.3rem .65rem;border-radius:999px;background:var(--hl);color:var(--text);font-family:'Courier Prime',monospace;font-weight:700;font-size:.85rem;
+  letter-spacing:.08em;box-shadow:2px 2px 0 var(--text)}
+.net-room:hover{background:var(--stamp);color:#fff}
+.net-new{padding:.3rem .65rem;border-radius:999px;background:var(--bg);color:var(--text);font-weight:800;font-size:.78rem;box-shadow:inset 0 0 0 2px rgba(22,19,15,.25)}
+.net-new:hover{background:var(--text);color:var(--bg-card)}
+.net-empty{font-size:.78rem;font-weight:700;color:var(--muted)}
 #collab-btn.unread::after{content:"";position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:var(--hl);box-shadow:0 0 0 2px var(--text)}
 #collab-side{--surface:var(--sidebar);flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:.8rem .8rem .6rem;display:none;flex-direction:column;gap:.8rem;box-sizing:border-box}
 body.collab-open #collab-side{display:flex}
@@ -901,6 +912,7 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
         </div>
         <button class="mini-btn" id="collab-listen" type="button" data-icon="mic" data-size="16">Escuchar código</button>
         <button class="mini-btn" id="direct-open" type="button">Conexión directa</button>
+        <div class="collab-net" id="collab-net" hidden></div>
         <div class="collab-lan" id="collab-lan" hidden></div>
       </div>
       <div class="side-block" id="collab-live" hidden>
@@ -6016,7 +6028,8 @@ function collabNewCode(){
   return s;
 }
 function collabLink(){
-  const base = (collab.lan && collab.lan.urls && collab.lan.urls[0]) ? collab.lan.urls[0] : location.origin+location.pathname;
+  const base = collab.remote ? 'http://'+collab.remote.host+'/'
+    : (collab.lan && collab.lan.urls && collab.lan.urls[0]) ? collab.lan.urls[0] : location.origin+location.pathname;
   return base+'#sala='+collab.code;
 }
 
@@ -6304,20 +6317,22 @@ function collabSupabaseTx(code){
     });
   });
 }
-function collabLanTx(code){
+function collabLanTx(code, remote){
   return new Promise((resolve, reject)=>{
     const proto = location.protocol==='https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(proto+'//'+location.host+'/ws?room='+encodeURIComponent(code)+'&id='+encodeURIComponent(collab.id));
+    const host = (remote && remote.host) || location.host;
+    const base = remote ? 'http://'+remote.host : '';
+    const ws = new WebSocket(proto+'//'+host+'/ws?room='+encodeURIComponent(code)+'&id='+encodeURIComponent(collab.id));
     const to = setTimeout(()=>{ try{ ws.close(); }catch(err){} reject(new Error('timeout')); }, 8000);
     let opened = false;
     const tx = {
       send(payload){ if(ws.readyState===1) ws.send(JSON.stringify({t:'bc', payload})); },
       track(meta){ if(ws.readyState===1) ws.send(JSON.stringify({t:'track', meta})); },
       async upload(path, blob, mime){
-        try{ const r = await fetch('/asset/'+path, {method:'PUT', body:blob, headers:{'Content-Type':mime}}); return r.ok; }
+        try{ const r = await fetch(base+'/asset/'+path, {method:'PUT', body:blob, headers:{'Content-Type':mime}}); return r.ok; }
         catch(err){ return false; }
       },
-      assetUrl(path){ return '/asset/'+path; },
+      assetUrl(path){ return base+'/asset/'+path; },
       close(){ opened = false; try{ ws.close(); }catch(err){} }
     };
     ws.onopen = ()=>{ clearTimeout(to); opened = true; resolve(tx); };
@@ -6685,7 +6700,7 @@ function directStatus(opened){
 })();
 
 /* ----- joining and leaving ----- */
-async function collabStart(code, creating){
+async function collabStart(code, creating, remote){
   code = String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(code.length<4){ showToast('Poné el código de la sala.'); return; }
   const nameInput = document.getElementById('collab-name');
@@ -6707,7 +6722,8 @@ async function collabStart(code, creating){
   collab.code = code;
   collab.uploaded = new Set();
   try{
-    collab.tx = collab.lan ? await collabLanTx(code) : await collabSupabaseTx(code);
+    collab.remote = remote || null;
+    collab.tx = collab.lan ? await collabLanTx(code, collab.remote) : await collabSupabaseTx(code);
   }catch(err){ collabLeave(true); showToast('No pude conectarme a la sala.'); return; }
   collab.on = true;
   collab.lastPage = state.currentIndex;
@@ -6735,6 +6751,7 @@ function collabLeave(silent){
   collab.peers = {}; collab.cursors = {}; collab.suspendFile = false; collab.pending = [];
   if(location.hash.indexOf('sala=')>=0) window.history.replaceState(null, '', location.pathname+location.search);
   collab.chat = [];
+  collab.remote = null;
   chatRender();
   if(window.collabStopEmit) window.collabStopEmit();
   document.getElementById('collab-qr').hidden = true;
@@ -6869,11 +6886,12 @@ function sndDecoder(sampleRate, onCode){
   };
 }
 
-/* ---- emitter: plays the frame over and over until stopped ---- */
-function sndStartEmit(code){
+/* ---- emitter: plays the frame a fixed number of times, then stops by itself ---- */
+function sndStartEmit(code, repeats, onDone){
   const nib = sndNibbles(code);
   const AC = window.AudioContext || window.webkitAudioContext;
   if(!nib || !AC) return null;
+  const times = Math.max(1, repeats || 3);
   const ctx = new AC();
   const gain = ctx.createGain();
   gain.gain.value = 0;
@@ -6882,8 +6900,6 @@ function sndStartEmit(code){
   osc.type = 'sine';
   osc.connect(gain);
   osc.start();
-  const frameSec = SND.syncSec + nib.length*SND.symSec + 0.9;
-  let next = ctx.currentTime + 0.15, stopped = false;
   const tone = (t, f, sec)=>{
     osc.frequency.setValueAtTime(f, t);
     gain.gain.setValueAtTime(0, t);
@@ -6891,20 +6907,27 @@ function sndStartEmit(code){
     gain.gain.setValueAtTime(SND.volume, t+sec-0.03);
     gain.gain.linearRampToValueAtTime(0, t+sec);
   };
-  const schedule = ()=>{
-    if(stopped) return;
-    let t = next;
-    tone(t, SND.sync, SND.syncSec); t += SND.syncSec;
-    nib.forEach((n,i)=>{ tone(t, sndFreq(n,i), SND.symSec); t += SND.symSec; });
-    next += frameSec;
-  };
-  schedule(); schedule();
-  const timer = setInterval(()=>{ if(ctx.currentTime > next - frameSec) schedule(); }, 250);
-  return ()=>{
-    stopped = true;
+  const frameSec = SND.syncSec + nib.length*SND.symSec;
+  const gap = 0.7;                                                   // silence between repetitions
+  let t = ctx.currentTime + 0.15;
+  for(let r=0;r<times;r++){
+    let x = t;
+    tone(x, SND.sync, SND.syncSec); x += SND.syncSec;
+    nib.forEach((n,i)=>{ tone(x, sndFreq(n,i), SND.symSec); x += SND.symSec; });
+    t += frameSec + gap;
+  }
+  const endAt = t - gap + 0.25;
+  let finished = false;
+  const stop = ()=>{
+    if(finished) return;
+    finished = true;
     clearInterval(timer);
     try{ osc.stop(); ctx.close(); }catch(err){}
   };
+  const timer = setInterval(()=>{
+    if(ctx.currentTime >= endAt){ stop(); if(onDone) onDone(); }
+  }, 100);
+  return stop;
 }
 
 /* ---- listener: microphone -> decoder ---- */
@@ -6971,7 +6994,7 @@ function collabRenderPanel(){
     document.body.classList.toggle('collab-open', on);
     $('collab-side').hidden = !on;
     btn.classList.remove('unread');
-    if(on){ collabRenderPanel(); chatRender(); }
+    if(on){ collabRenderPanel(); chatRender(); if(window.collabPollNet) window.collabPollNet(); }
   };
   window.collabSetOpen = setOpen;
   btn.addEventListener('click', ()=> setOpen(!document.body.classList.contains('collab-open')));
@@ -6997,14 +7020,22 @@ function collabRenderPanel(){
   /* the code, by sound: one device emits, the other listens */
   let stopEmit = null, stopListen = null;
   const emitBtn = $('collab-emit'), listenBtn = $('collab-listen');
-  window.collabStopEmit = ()=>{ if(stopEmit){ stopEmit(); stopEmit = null; } emitBtn.classList.remove('active'); };
+  const emitDone = ()=>{
+    stopEmit = null;
+    window.kyroVoiceHold = false;
+    emitBtn.classList.remove('active');
+    emitBtn.setAttribute('aria-pressed', 'false');
+  };
+  window.collabStopEmit = ()=>{ if(stopEmit){ stopEmit(); } emitDone(); };
   emitBtn.addEventListener('click', ()=>{
     if(stopEmit){ window.collabStopEmit(); return; }
     if(!collab.on || collab.code==='DIRECTO') return;
-    stopEmit = sndStartEmit(collab.code);
-    if(!stopEmit){ showToast('No pude emitir el sonido.'); return; }
+    if(window.kyroVoiceStop) window.kyroVoiceStop();       // the robot stays quiet while the code plays
+    window.kyroVoiceHold = true;
+    stopEmit = sndStartEmit(collab.code, 3, emitDone);
+    if(!stopEmit){ window.kyroVoiceHold = false; showToast('No pude emitir el sonido.'); return; }
     emitBtn.classList.add('active');
-    showToast('Emitiendo el código. En el otro dispositivo tocá Escuchar código.');
+    emitBtn.setAttribute('aria-pressed', 'true');
   });
   const stopHearing = ()=>{ if(stopListen){ stopListen(); stopListen = null; } listenBtn.classList.remove('active','hearing'); };
   listenBtn.addEventListener('click', async ()=>{
@@ -7020,6 +7051,26 @@ function collabRenderPanel(){
       showToast('Escuchando… acercá el dispositivo que emite el código.');
     }catch(err){ showToast('No pude usar el micrófono.'); }
   });
+  /* other servers on this network (the desktop app announces itself by UDP) */
+  const netBox = $('collab-net');
+  const renderNet = peers=>{
+    netBox.hidden = false;
+    if(!peers.length){ netBox.innerHTML = '<span class="collab-label">En tu red</span><span class="net-empty">Buscando servidores…</span>'; return; }
+    netBox.innerHTML = '<span class="collab-label">En tu red</span>' + peers.map(q=>
+      '<div class="net-peer"><div class="net-name">'+chatEscape(q.name||q.host)+'</div><div class="net-rooms">'+
+      (q.rooms||[]).map(c=> '<button type="button" class="net-room" data-host="'+q.host+':'+q.port+'" data-code="'+c+'">'+c+'</button>').join('')+
+      '<button type="button" class="net-new" data-host="'+q.host+':'+q.port+'">+ sala</button></div></div>').join('');
+    netBox.querySelectorAll('.net-room').forEach(b=> b.addEventListener('click', ()=> collabStart(b.dataset.code, false, {host:b.dataset.host})));
+    netBox.querySelectorAll('.net-new').forEach(b=> b.addEventListener('click', ()=> collabStart(collabNewCode(), true, {host:b.dataset.host})));
+  };
+  const pollNet = ()=>{
+    if(!collab.lan || collab.on || !document.body.classList.contains('collab-open')) return;
+    fetch('lan-peers', {cache:'no-store'}).then(r=> r.ok ? r.json() : null).then(d=>{
+      if(d && Array.isArray(d.peers)) renderNet(d.peers);
+    }).catch(()=>{});
+  };
+  setInterval(pollNet, 3000);
+  window.collabPollNet = pollNet;
   /* chat */
   $('chat-form').addEventListener('submit', e=>{
     e.preventDefault();
@@ -7183,6 +7234,7 @@ document.addEventListener('keydown', e=>{
 
   const load = ()=> loadScriptOnce(SAM_LIB, ()=> typeof window.SamJs==='function').then(()=>{ ready = true; }).catch(()=>{ ready = false; });
   function say(text, force, whole){
+    if(window.kyroVoiceHold) return;
     if(!(on || force)) return;
     const ph = phonetic(text, whole);
     const now = performance.now();
@@ -7196,6 +7248,7 @@ document.addEventListener('keydown', e=>{
       if(current && current.catch) current.catch(()=>{});
     }catch(err){ /* sin audio: no pasa nada */ }
   }
+  window.kyroVoiceStop = ()=>{ if(current && current.abort){ try{ current.abort('hold'); }catch(err){} } last = ''; };
   window.kyroSpeak = text=> say(text, false, false);
   window.kyroRead = text=> say(String(text).slice(0, 240), false, true);   // chat messages: the whole text
 

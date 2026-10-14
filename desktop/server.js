@@ -15,8 +15,11 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const crypto = require('crypto');
+const dgram = require('dgram');
 const { WebSocketServer } = require('ws');
 
+const DISCOVERY_PORT = 3738;
 const MAX_ASSET = 30 * 1024 * 1024;
 const MAX_TOTAL = 600 * 1024 * 1024;
 const ROOM_RE = /^[A-Z0-9]{4,12}$/;
@@ -36,6 +39,63 @@ function lanAddresses() {
   return out;
 }
 
+/* Descubrimiento: cada programa anuncia por UDP (broadcast) su nombre, puerto y
+   salas con gente, y escucha a los demás. Así la app puede mostrar qué
+   servidores hay en la red sin que nadie escriba direcciones. */
+function broadcastTargets() {
+  const out = new Set(['255.255.255.255']);
+  const nets = os.networkInterfaces();
+  Object.keys(nets).forEach((name) => {
+    (nets[name] || []).forEach((n) => {
+      if (n.family !== 'IPv4' || n.internal || !n.netmask) return;
+      const a = n.address.split('.').map(Number);
+      const m = n.netmask.split('.').map(Number);
+      out.add(a.map((x, i) => (x | (~m[i] & 255))).join('.'));
+    });
+  });
+  return [...out];
+}
+
+function startDiscovery(getInfo) {
+  const id = crypto.randomBytes(6).toString('hex');
+  const peers = new Map();
+  let sock = null;
+  try {
+    sock = dgram.createSocket({ type: 'udp4', reuseAddr: true });
+    sock.on('error', () => { /* sin red o puerto ocupado: la app sigue sin descubrimiento */ });
+    sock.on('message', (msg, rinfo) => {
+      let m;
+      try { m = JSON.parse(String(msg)); } catch (e) { return; }
+      if (!m || m.app !== 'kyro' || m.id === id || !Number.isInteger(m.port)) return;
+      peers.set(m.id, {
+        id: String(m.id).slice(0, 24),
+        name: String(m.name || '').slice(0, 40),
+        host: rinfo.address,
+        port: m.port,
+        rooms: (Array.isArray(m.rooms) ? m.rooms : []).filter((r) => ROOM_RE.test(r)).slice(0, 20),
+        t: Date.now(),
+      });
+    });
+    sock.bind(DISCOVERY_PORT, () => { try { sock.setBroadcast(true); } catch (e) { /* ignorar */ } });
+  } catch (e) { sock = null; }
+  const timer = setInterval(() => {
+    const now = Date.now();
+    peers.forEach((p, k) => { if (now - p.t > 7000) peers.delete(k); });
+    if (!sock) return;
+    const info = getInfo();
+    if (!info.port) return;
+    const payload = Buffer.from(JSON.stringify({ app: 'kyro', v: 1, id, name: os.hostname(), port: info.port, rooms: info.rooms }));
+    broadcastTargets().forEach((addr) => {
+      try { sock.send(payload, DISCOVERY_PORT, addr, () => {}); } catch (e) { /* ignorar */ }
+    });
+  }, 2000);
+  timer.unref();
+  return {
+    list: () => [...peers.values()].map((p) => ({ id: p.id, name: p.name, host: p.host, port: p.port, rooms: p.rooms })),
+    close: () => { clearInterval(timer); try { if (sock) sock.close(); } catch (e) { /* ignorar */ } },
+  };
+}
+
 function cleanMeta(m) {
   m = m && typeof m === 'object' ? m : {};
   return {
@@ -44,6 +104,8 @@ function cleanMeta(m) {
     page: Number.isInteger(m.page) && m.page >= 0 && m.page < 10000 ? m.page : 0,
   };
 }
+
+const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
 
 function createServer({ port = 3737, root }) {
   const rooms = new Map();   // code -> Map(id -> { ws, meta })
@@ -54,10 +116,19 @@ function createServer({ port = 3737, root }) {
     const url = new URL(req.url, 'http://localhost');
     const p = url.pathname;
 
+    if (req.method === 'OPTIONS') { res.writeHead(204, CORS); res.end(); return; }
+
+    if (req.method === 'GET' && p === '/lan-peers') {
+      const list = discovery ? discovery.list() : [];
+      res.writeHead(200, Object.assign({ 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, CORS));
+      res.end(JSON.stringify({ peers: list.map((q) => Object.assign({ url: 'http://' + q.host + ':' + q.port + '/' }, q)) }));
+      return;
+    }
+
     if (req.method === 'GET' && p === '/lan-info') {
       const listening = server.address();
       const prt = listening && listening.port ? listening.port : port;
-      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      res.writeHead(200, Object.assign({ 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, CORS));
       res.end(JSON.stringify({ lan: true, port: prt, urls: lanAddresses().map((a) => 'http://' + a + ':' + prt + '/') }));
       return;
     }
@@ -67,8 +138,8 @@ function createServer({ port = 3737, root }) {
       const key = am[1] + '/' + am[2] + '.' + am[3];
       if (req.method === 'GET') {
         const buf = assets.get(key);
-        if (!buf) { res.writeHead(404); res.end(); return; }
-        res.writeHead(200, { 'Content-Type': MIME[am[3]], 'Cache-Control': 'public, max-age=31536000, immutable' });
+        if (!buf) { res.writeHead(404, CORS); res.end(); return; }
+        res.writeHead(200, Object.assign({ 'Content-Type': MIME[am[3]], 'Cache-Control': 'public, max-age=31536000, immutable' }, CORS));
         res.end(buf);
         return;
       }
@@ -78,22 +149,22 @@ function createServer({ port = 3737, root }) {
         let aborted = false;
         req.on('data', (c) => {
           size += c.length;
-          if (size > MAX_ASSET) { aborted = true; res.writeHead(413); res.end(); req.destroy(); return; }
+          if (size > MAX_ASSET) { aborted = true; res.writeHead(413, CORS); res.end(); req.destroy(); return; }
           chunks.push(c);
         });
         req.on('end', () => {
           if (aborted) return;
           if (!assets.has(key)) {
-            if (total + size > MAX_TOTAL) { res.writeHead(507); res.end(); return; }
+            if (total + size > MAX_TOTAL) { res.writeHead(507, CORS); res.end(); return; }
             assets.set(key, Buffer.concat(chunks));
             total += size;
           }
-          res.writeHead(201);
+          res.writeHead(201, CORS);
           res.end();
         });
         return;
       }
-      res.writeHead(405); res.end();
+      res.writeHead(405, CORS); res.end();
       return;
     }
 
@@ -109,6 +180,13 @@ function createServer({ port = 3737, root }) {
 
     res.writeHead(404);
     res.end();
+  });
+
+  const discovery = startDiscovery(() => {
+    const a = server.address();
+    const busy = [];
+    rooms.forEach((members, code) => { if (members.size > 0) busy.push(code); });
+    return { port: a && a.port, rooms: busy.slice(0, 20) };
   });
 
   const wss = new WebSocketServer({ noServer: true, maxPayload: 2 * 1024 * 1024 });
@@ -193,7 +271,7 @@ function createServer({ port = 3737, root }) {
         resolve({
           port: server.address().port,
           urls: lanAddresses().map((a) => 'http://' + a + ':' + server.address().port + '/'),
-          close: () => { clearInterval(beat); wss.close(); server.close(); },
+          close: () => { clearInterval(beat); discovery.close(); wss.close(); server.close(); },
         });
       });
     };
