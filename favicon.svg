@@ -17,6 +17,6 @@
     <rect x="19.5" y="13.5" width="26" height="36" rx="3" fill="#16130f"/>
     <rect x="16" y="10" width="26" height="36" rx="3" fill="#d9381a" stroke="#16130f" stroke-width="3"/>
         <!-- K -->
-    <path d="M25.5 18v20M25.5 29l9.5-11M28.5 26l7.5 12" fill="none" stroke="#fffaf0" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M23.75 18v20M23.75 29l9.5-11M26.75 26l7.5 12" fill="none" stroke="#fffaf0" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 </svg>
