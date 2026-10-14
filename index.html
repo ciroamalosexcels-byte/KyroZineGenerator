@@ -295,11 +295,23 @@ select.plain-select{padding:.45rem 2.6rem .45rem 1rem;border:none;border-radius:
   font-family:'Courier Prime',monospace;font-weight:700;font-size:.82rem;color:var(--text);text-align:left;box-shadow:2px 2px 0 var(--text);overflow:hidden}
 .collab-url span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .collab-url:hover{background:var(--hl)}
-.collab-ticket{position:relative;text-align:center;padding:.9rem .6rem;border-radius:14px;background:var(--hl);
-  transform:rotate(-1.2deg);box-shadow:4px 4px 0 var(--text)}
-.collab-ticket::before,.collab-ticket::after{content:"";position:absolute;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:var(--bg-card)}
-.collab-ticket::before{left:-7px}.collab-ticket::after{right:-7px}
-.collab-ticket small{display:block;font-weight:800;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ticket{--r:9px;--sx:72%;position:relative;filter:drop-shadow(4px 4px 0 var(--text));transform:rotate(-1.5deg);margin:.2rem .2rem .3rem}
+.ticket-body{position:relative;display:grid;grid-template-columns:72% 28%;min-height:104px;border-radius:12px;background:var(--hl);
+  -webkit-mask:radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000),radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000),
+    radial-gradient(circle var(--r) at var(--sx) 0,#0000 97%,#000),radial-gradient(circle var(--r) at var(--sx) 100%,#0000 97%,#000);
+  -webkit-mask-composite:source-in;
+  mask:radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000),radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000),
+    radial-gradient(circle var(--r) at var(--sx) 0,#0000 97%,#000),radial-gradient(circle var(--r) at var(--sx) 100%,#0000 97%,#000);
+  mask-composite:intersect}
+.ticket-body::before{content:"";position:absolute;left:var(--sx);top:14px;bottom:14px;width:0;border-left:3px dashed var(--text);opacity:.55;transform:translateX(-1.5px)}
+.ticket-main{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.35rem;padding:.7rem .9rem .7rem 1.2rem;text-align:center}
+.ticket-main small{font-weight:800;font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text);opacity:.7}
+.ticket-main .collab-code{font-size:1.55rem;letter-spacing:.1em;line-height:1.1;white-space:nowrap}
+.ticket-line{display:flex;align-items:center;gap:.5rem;width:100%;font-weight:800;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase}
+.ticket-line::before,.ticket-line::after{content:"";flex:1;border-top:2px solid var(--text);opacity:.55}
+.ticket-stub{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;padding:.6rem .5rem .6rem .8rem}
+.ticket-stub b{font-size:2.1rem;line-height:1;font-weight:900}
+.ticket-stub span{font-size:.58rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;writing-mode:horizontal-tb}
 .collab-code{font-family:'Courier Prime',monospace;font-weight:700;font-size:1.9rem;letter-spacing:.16em;line-height:1.1}
 #collab-peers{display:flex;flex-wrap:wrap;gap:.45rem}
 .collab-peer{display:inline-flex;align-items:center;gap:.45rem;padding:.3rem .7rem .3rem .4rem;border-radius:999px;background:var(--bg);font-weight:700;font-size:.88rem;max-width:100%}
@@ -774,7 +786,16 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
     <button class="mini-btn" id="direct-open" type="button">Conexión directa · sin internet</button>
   </div>
   <div class="ps-block" id="collab-live" hidden>
-    <div class="collab-ticket"><small>Sala</small><div class="collab-code" id="collab-code-label"></div></div>
+    <div class="ticket">
+      <div class="ticket-body">
+        <div class="ticket-main">
+          <small>Kyro Zine · Sala</small>
+          <div class="collab-code" id="collab-code-label"></div>
+          <div class="ticket-line">Admit one</div>
+        </div>
+        <div class="ticket-stub"><b id="ticket-count">1</b><span id="ticket-label">en sala</span></div>
+      </div>
+    </div>
     <div class="collab-field">
       <span class="collab-label">Conectados</span>
       <div id="collab-peers"></div>
@@ -6690,7 +6711,10 @@ function collabRenderPanel(){
   document.getElementById('collab-live').hidden = !collab.on;
   if(!collab.on) return;
   const isDirect = collab.code==='DIRECTO';
-  document.getElementById('collab-code-label').textContent = isDirect ? 'Directa' : collab.code;
+  document.getElementById('collab-code-label').textContent = isDirect ? 'DIRECTA' : collab.code;
+  const nPeople = Math.max(1, Object.keys(collab.peers).length);
+  document.getElementById('ticket-count').textContent = String(nPeople);
+  document.getElementById('ticket-label').textContent = nPeople===1 ? 'persona' : 'personas';
   document.getElementById('collab-copy').hidden = isDirect;
   document.getElementById('collab-invite').hidden = !(isDirect && window.direct && direct.role==='host');
   const peers = collab.peers;
