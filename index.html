@@ -269,6 +269,48 @@ select.plain-select{padding:.45rem 2.6rem .45rem 1rem;border:none;border-radius:
 .modal .toggle-group{background:var(--bg)}
 .modal .toggle-group button{color:var(--text)}
 .modal .toggle-group button.active{background:var(--text);color:var(--bg-card)}
+.page-settings-menu.collab-menu{width:min(340px, calc(100vw - 16px));box-sizing:border-box;gap:.9rem;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden}
+.collab-menu *{min-width:0;box-sizing:border-box}
+.collab-menu [hidden]{display:none !important}
+.collab-menu .ps-block{gap:.7rem}
+.collab-title{display:flex;align-items:center;gap:.6rem}
+.collab-chip{font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:.2rem .55rem;border-radius:999px;
+  background:var(--hl);color:var(--text);transform:rotate(-2deg);box-shadow:2px 2px 0 var(--text)}
+.collab-chip.lan{background:#2b6b58;color:#fffaf0}
+.collab-field{display:flex;flex-direction:column;gap:.3rem}
+.collab-label{font-size:.78rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+.collab-input{width:100%;height:42px;padding:0 1rem;border-radius:999px;border:none;background:var(--bg);color:var(--text);
+  font:inherit;font-weight:700;box-shadow:inset 3px 3px 0 rgba(22,19,15,.12);outline:none}
+.collab-input:focus{box-shadow:inset 3px 3px 0 rgba(22,19,15,.12),0 0 0 3px var(--hl)}
+.collab-input::placeholder{color:var(--muted);font-weight:600}
+.collab-big{height:46px;font-size:1rem;width:100%}
+.page-settings-menu .mini-btn.collab-big{background:var(--stamp);color:#fff;box-shadow:4px 4px 0 var(--text)}
+.page-settings-menu .mini-btn.collab-big:hover{background:var(--text);box-shadow:5px 6px 0 var(--stamp)}
+.collab-or{display:flex;align-items:center;gap:.7rem;font-weight:800;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.collab-or::before,.collab-or::after{content:"";flex:1;border-top:2px dashed rgba(22,19,15,.25)}
+.collab-row{display:flex;gap:.5rem;align-items:center}
+.collab-row .collab-input{flex:1;text-transform:uppercase;font-family:'Courier Prime',monospace;letter-spacing:.14em}
+.collab-lan{display:flex;flex-direction:column;gap:.4rem;padding:.7rem;border-radius:14px;background:var(--bg);box-shadow:inset 0 0 0 2px rgba(22,19,15,.12)}
+.collab-url{display:flex;align-items:center;gap:.5rem;width:100%;padding:.4rem .7rem;border-radius:999px;background:var(--bg-card);
+  font-family:'Courier Prime',monospace;font-weight:700;font-size:.82rem;color:var(--text);text-align:left;box-shadow:2px 2px 0 var(--text);overflow:hidden}
+.collab-url span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.collab-url:hover{background:var(--hl)}
+.collab-ticket{position:relative;text-align:center;padding:.9rem .6rem;border-radius:14px;background:var(--hl);
+  transform:rotate(-1.2deg);box-shadow:4px 4px 0 var(--text)}
+.collab-ticket::before,.collab-ticket::after{content:"";position:absolute;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:var(--bg-card)}
+.collab-ticket::before{left:-7px}.collab-ticket::after{right:-7px}
+.collab-ticket small{display:block;font-weight:800;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.collab-code{font-family:'Courier Prime',monospace;font-weight:700;font-size:1.9rem;letter-spacing:.16em;line-height:1.1}
+#collab-peers{display:flex;flex-wrap:wrap;gap:.45rem}
+.collab-peer{display:inline-flex;align-items:center;gap:.45rem;padding:.3rem .7rem .3rem .4rem;border-radius:999px;background:var(--bg);font-weight:700;font-size:.88rem;max-width:100%}
+.collab-peer .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.collab-dot{width:14px;height:14px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px var(--text)}
+.collab-pg{font-size:.72rem;color:var(--muted);font-weight:700;flex:0 0 auto}
+.collab-actions{display:flex;gap:.6rem}
+.collab-actions .mini-btn{flex:1}
+.page-settings-menu .mini-btn.collab-leave{background:transparent;color:var(--stamp);box-shadow:inset 0 0 0 2px var(--stamp)}
+.page-settings-menu .mini-btn.collab-leave:hover{background:var(--stamp);color:#fff;box-shadow:inset 0 0 0 2px var(--stamp)}
+#collab-btn.live{box-shadow:0 0 0 3px #2b6b58}
 .export-adv{margin-top:.9rem;font-size:.9rem}
 .export-adv summary{cursor:pointer;font-weight:700;color:var(--muted)}
 #export-preset{display:flex;width:100%;gap:.5rem;padding:4px}
@@ -447,8 +489,11 @@ body.focus-mode .view-zoom,body.focus-mode .stage-label{display:none}
 .layer.selected .layer-eye:hover,.layer.selected .layer-mv:hover{background:rgba(255,255,255,.2)}
 .layer{touch-action:pan-y;user-select:none;transition:transform .16s ease,opacity .16s ease,background .15s ease}
 .layer.dragging{opacity:.5;transition:none;position:relative;z-index:3;cursor:grabbing;box-shadow:5px 6px 0 var(--text)}
-.layer-grip{opacity:.45;display:flex;align-items:center;padding-right:.35rem;cursor:grab;touch-action:none}
-.layer.selected .layer-grip{opacity:.7}
+.layer-name .ico{cursor:grab;touch-action:none;flex:0 0 auto}
+.layer.dragging .layer-name .ico{cursor:grabbing}
+.layer-label{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.layer-rename{width:100%;min-width:0;height:24px;border-radius:999px;border:none;padding:0 .5rem;font:inherit;font-weight:600;background:var(--bg-card);color:var(--text)}
+.layer-acts{display:flex;align-items:center;gap:0;flex:0 0 auto}
 .layer-swatch{width:16px;height:16px;border-radius:50%;padding:0;border:none;box-shadow:none;flex-shrink:0;display:inline-block}
 .layer-swatch:hover{transform:scale(1.2)}
 .ib{position:relative}
@@ -457,8 +502,11 @@ body.focus-mode .view-zoom,body.focus-mode .stage-label{display:none}
   opacity:0;transition:opacity .1s ease}
 #tip.show{opacity:1}
 .layer-eye.ph{pointer-events:none}
-.layer-del{width:26px;height:26px;border-radius:50%;background:transparent;color:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:none;opacity:.55}
-.layer-del:hover{background:var(--stamp);color:#fff;opacity:1;transform:none;box-shadow:none}
+.layer-act{width:24px;height:24px;border-radius:50%;background:transparent;color:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:none;opacity:.5;padding:0}
+.layer-act:hover{opacity:1;transform:none;box-shadow:none;background:rgba(22,19,15,.12)}
+.layer.selected .layer-act:hover{background:rgba(255,255,255,.2)}
+.layer-lock.on{opacity:1}
+.layer-del:hover{background:var(--stamp);color:#fff;opacity:1}
 .layer-name{overflow:hidden;text-overflow:ellipsis}
 .layer-chip{width:16px;height:16px;border-radius:5px;box-shadow:0 0 0 2px var(--text)}
 .upload-fab{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;
@@ -685,11 +733,45 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
 <header>
   <div class="header-left"><span class="logo">Kyro Zine Generator</span><span class="project-name" id="project-name">proyecto.kyro</span><button type="button" class="save-status" id="save-status"></button><button type="button" class="link-btn" id="reconnect-btn" hidden title="El navegador pide permiso de nuevo cada vez que abrís la app">Autoguardar en proyecto.kyro</button></div>
   <div class="header-right">
+    <button class="mini-btn round" id="collab-btn" title="Colaborar en vivo" aria-label="Colaborar en vivo" data-icon="users" data-size="19"></button>
     <button class="mini-btn round" id="page-settings-btn" title="Ajustes" aria-label="Ajustes" data-icon="settings" data-size="19"></button>
     <button class="mini-btn round" id="howto-btn" title="Cómo armarlo" aria-label="Cómo armarlo" data-icon="book-open" data-size="19"></button>
     <button class="export-btn round" id="export-btn" title="Exportar PDF" aria-label="Exportar PDF" data-icon="download" data-size="19"></button>
   </div>
 </header>
+
+<div class="page-settings-menu collab-menu" id="collab-panel" hidden>
+  <div class="ps-head">
+    <div class="collab-title"><span class="ps-main">Colaborar</span><span class="collab-chip" id="collab-chip">en vivo</span></div>
+    <div class="ps-head-actions">
+      <button type="button" class="modal-close" id="collab-close" title="Cerrar" aria-label="Cerrar" data-icon="x" data-size="18"></button>
+    </div>
+  </div>
+  <div class="ps-block" id="collab-off">
+    <label class="collab-field">
+      <span class="collab-label">Tu nombre</span>
+      <input class="collab-input" id="collab-name" type="text" maxlength="24" placeholder="¿Cómo te ven los demás?" autocomplete="off">
+    </label>
+    <button class="mini-btn collab-big" id="collab-create" type="button">Crear sala nueva</button>
+    <div class="collab-or">o entrá a una</div>
+    <div class="collab-row">
+      <input class="collab-input" id="collab-code" type="text" maxlength="12" placeholder="CÓDIGO" autocomplete="off" aria-label="Código de sala">
+      <button class="mini-btn" id="collab-enter" type="button">Entrar</button>
+    </div>
+    <div class="collab-lan" id="collab-lan" hidden></div>
+  </div>
+  <div class="ps-block" id="collab-live" hidden>
+    <div class="collab-ticket"><small>Sala</small><div class="collab-code" id="collab-code-label"></div></div>
+    <div class="collab-field">
+      <span class="collab-label">Conectados</span>
+      <div id="collab-peers"></div>
+    </div>
+    <div class="collab-actions">
+      <button class="mini-btn" id="collab-copy" type="button">Copiar enlace</button>
+      <button class="mini-btn collab-leave" id="collab-leave" type="button">Salir</button>
+    </div>
+  </div>
+</div>
 
 <div class="page-settings-menu" id="page-settings-menu" hidden>
   <div class="ps-head">
@@ -704,6 +786,13 @@ html.dark .layer.selected{background:#16130f;color:#fffaf0}
     <div class="theme-toggle" id="theme-toggle">
       <button type="button" data-theme="light" class="active">Claro</button>
       <button type="button" data-theme="dark">Oscuro</button>
+    </div>
+  </div>
+  <div class="ps-block">
+    <span class="ps-title">Voz robótica</span>
+    <div class="theme-toggle" id="voice-toggle">
+      <button type="button" data-v="off" class="active">Apagada</button>
+      <button type="button" data-v="on">Encendida</button>
     </div>
   </div>
   <div class="ps-block">
@@ -1005,7 +1094,7 @@ function defaultImage(){
     scaleX:1, scaleY:1, crop:{l:0,t:0,r:0,b:0}, frame:{thickness:0,color:'#0a0a0a'}};
 }
 function defaultText(){ return {content:'', font:'display', size:28, align:'center', vAlign:'middle', color:'#0a0a0a', offsetX:0, offsetY:0, rotation:0, fx:null, fy:null, fw:null}; }
-function makeBlankPage(){ return {bgColor:'#ffffff', image:defaultImage(), text:defaultText(), strokes:[], extras:[], order:['image','strokes','text'], hidden:{}, locked:{}}; }
+function makeBlankPage(){ return {bgColor:'#ffffff', image:defaultImage(), text:defaultText(), strokes:[], extras:[], order:['image','strokes','text'], hidden:{}, locked:{}, names:{}}; }
 
 /* "Pliego": one image spread across the two pages that face each other when
    the book is open (pages 2-3, 4-5, …). It lives in state.spreads keyed by
@@ -1075,6 +1164,7 @@ function ensurePages(){
     ['image','strokes','text'].forEach(k=>{ if(!p.order.includes(k)) p.order.push(k); });
     if(!p.hidden || typeof p.hidden!=='object') p.hidden = {};
     if(!p.locked || typeof p.locked!=='object') p.locked = {};
+    if(!p.names || typeof p.names!=='object') p.names = {};
     if(!Array.isArray(p.extras)) p.extras = [];
     p.extras = p.extras.map(e=> Object.assign(defaultImage(), e, {id: e.id || uid(), frame:{thickness:0,color:'#0a0a0a'}}));
   });
@@ -1611,6 +1701,7 @@ const ICONS = {
   'scissors':'<circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/>',
   'clipboard-paste':'<path d="M15 2H9a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1Z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M16 4h2a2 2 0 0 1 2 2v4"/><path d="M21 14H11"/><path d="m15 10-4 4 4 4"/>',
   'layers':'<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+  'users':'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   'eye-off':'<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
   'arrow-up':'<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
   'arrow-down':'<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
@@ -2157,6 +2248,7 @@ function drawStageChrome(ctx, canvas, M){
     ctx.restore();
   }
   drawSelectionChrome(ctx, canvas, M, disp);
+  if(window.collab && collab.on) drawRemoteCursors(ctx, M, disp);
   if(tool!=='transform' && tool!=='crop' && tool!=='text') return;
   if(!pageIdxVisible(state.currentIndex)) return;
   const cur = tool==='text' ? textOnlyRef() : currentTargetRef();
@@ -3026,6 +3118,8 @@ function pageOrder(page){
   return o;
 }
 function layerLabel(page, kind, sp){
+  const custom = page.names && page.names[kind];
+  if(custom) return custom;
   if(kind.indexOf('extra:')===0){
     const i = (page.extras||[]).findIndex(e=> 'extra:'+e.id===kind);
     return 'Imagen '+(i+2);
@@ -3201,10 +3295,11 @@ function renderEditPanel(){
     const name = layerLabel(page, kind, sp);
     return '<div class="layer'+sel+(hidden?' off':'')+(locked?' locked':'')+(layerHasContent(page,kind)?'':' empty')+'" data-layer="'+kind+'">'+
       '<button type="button" class="layer-eye" data-eye="'+kind+'" title="'+(hidden?'Mostrar':'Ocultar')+'">'+icon(hidden?'eye-off':'eye',16)+'</button>'+
-      '<span class="layer-name">'+icon(LAYER_ICONS[kind]||'image-plus',16)+name+'</span>'+
-      '<button type="button" class="layer-eye" data-lock="'+kind+'" title="'+(locked?'Desbloquear':'Bloquear')+'" aria-pressed="'+locked+'">'+icon(locked?'lock':'unlock',15)+'</button>'+
-      '<button type="button" class="layer-del" data-del="'+kind+'" title="Eliminar capa">'+icon('trash',14)+'</button>'+
-      '<span class="layer-grip">'+icon('grip',14)+'</span>'+
+      '<span class="layer-name" title="Arrastrá para ordenar · doble clic para renombrar">'+icon(LAYER_ICONS[kind]||'image-plus',16)+'<span class="layer-label">'+String(name).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span></span>'+
+      '<span class="layer-acts">'+
+      '<button type="button" class="layer-act layer-lock'+(locked?' on':'')+'" data-lock="'+kind+'" title="'+(locked?'Desbloquear':'Bloquear')+'" aria-pressed="'+locked+'">'+icon(locked?'lock':'unlock',15)+'</button>'+
+      '<button type="button" class="layer-act layer-del" data-del="'+kind+'" title="Eliminar capa">'+icon('trash',15)+'</button>'+
+      '</span>'+
       '</div>';
   }).join('') +
   '<div class="layer fixed"><span class="layer-eye ph"></span>'+
@@ -3381,6 +3476,45 @@ function bindTextPanel(panel){
   }));
 }
 
+/* a second tap on the same layer within 400ms renames it */
+let lastLayerTap = {kind:'', t:0};
+function layerTapped(kind, select){
+  const now = performance.now();
+  const dbl = lastLayerTap.kind===kind && now-lastLayerTap.t<400;
+  lastLayerTap = {kind, t: dbl ? 0 : now};
+  select(kind);
+  if(dbl) setTimeout(()=> startLayerRename(kind), 0);
+}
+function startLayerRename(kind){
+  const page = currentPage();
+  const row = [...document.querySelectorAll('#edit-panel .layer[data-layer]')].find(r=> r.dataset.layer===kind);
+  const label = row && row.querySelector('.layer-label');
+  if(!label) return;
+  const sp = spreadAt(state.currentIndex);
+  const input = document.createElement('input');
+  input.type = 'text'; input.className = 'layer-rename'; input.maxLength = 32;
+  input.value = label.textContent;
+  label.replaceWith(input);
+  input.focus(); input.select();
+  let done = false;
+  const commit = ok=>{
+    if(done) return; done = true;
+    if(ok){
+      const v = input.value.trim();
+      if(!page.names) page.names = {};
+      if(v && v!==layerLabel(Object.assign({}, page, {names:{}}), kind, sp)) page.names[kind] = v; else delete page.names[kind];
+      save();
+    }
+    renderEditPanel();
+  };
+  input.addEventListener('keydown', e=>{
+    e.stopPropagation();
+    if(e.key==='Enter') commit(true);
+    else if(e.key==='Escape') commit(false);
+  });
+  input.addEventListener('blur', ()=> commit(true));
+  input.addEventListener('pointerdown', e=> e.stopPropagation());
+}
 function bindLayers(panel, page){
   panel.querySelectorAll('[data-del]').forEach(b=>{
     b.addEventListener('pointerdown', e=> e.stopPropagation());
@@ -3417,11 +3551,11 @@ function bindLayers(panel, page){
   const rows = [...panel.querySelectorAll('.layer[data-layer]')];
   rows.forEach((row, idx)=>{
     row.addEventListener('pointerdown', e=>{
-      if(e.button!==0 || e.target.closest('[data-eye]') || e.target.closest('[data-lock]') || e.target.closest('[data-del]')) return;
+      if(e.button!==0 || e.target.closest('[data-eye]') || e.target.closest('[data-lock]') || e.target.closest('[data-del]') || e.target.closest('.layer-rename')) return;
       /* On touch, ordinary rows remain vertically scrollable. Reordering is
-         intentionally limited to the visible grip. */
-      if(e.pointerType==='touch' && !e.target.closest('.layer-grip')){
-        select(row.dataset.layer);
+         limited to starting on the layer's icon. */
+      if(e.pointerType==='touch' && !e.target.closest('.layer-name .ico')){
+        layerTapped(row.dataset.layer, select);
         return;
       }
       const gap = 6, h = row.offsetHeight + gap;
@@ -3445,7 +3579,7 @@ function bindLayers(panel, page){
         row.removeEventListener('pointermove', move);
         row.removeEventListener('pointerup', up);
         row.removeEventListener('pointercancel', up);
-        if(!st.moved){ select(row.dataset.layer); return; }
+        if(!st.moved){ layerTapped(row.dataset.layer, select); return; }
         const shown = rows.map(r=> r.dataset.layer);          // listed layers, top → bottom
         const [k] = shown.splice(idx, 1);
         shown.splice(st.to, 0, k);
@@ -5449,7 +5583,7 @@ function setSaveStatus(kind){
   el.dataset.kind = kind;
 }
 function scheduleFileSave(){
-  if(!projectHandle) return;
+  if(!projectHandle || (window.collab && collab.suspendFile)) return;
   clearTimeout(fileSaveTimer);
   fileSaveTimer = setTimeout(async ()=>{
     try{ await writeProjectTo(projectHandle); setSaveStatus('file'); }
@@ -5468,6 +5602,7 @@ async function doPersist(){
   else setSaveStatus('browser');
 }
 function persist(){
+  if(window.collab && collab.on) collabSoon();
   clearTimeout(saveTimer);
   saveTimer = setTimeout(doPersist, 400);
 }
@@ -5747,9 +5882,466 @@ async function fileToDataURL(file){
 document.getElementById('global-file-input').setAttribute('accept', IMAGE_ACCEPT);
 
 
+/* ---------- colaboración en vivo ----------
+   Rooms live on Supabase Realtime (a broadcast channel per room code) and
+   photos on Supabase Storage (one file per picture, named by its SHA-1, so a
+   picture is uploaded once). Only what changed travels: every finished edit
+   sends the pages whose content differs from what was last sent. The last
+   edit on a page wins. A newcomer asks the room for a snapshot and the
+   lowest-id peer answers. Big messages are cut into small chunks. */
+var collab = {
+  url:'https://erwytlkrbajrakflqynn.supabase.co',
+  key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyd3l0bGtyYmFqcmFrZmxxeW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwMDc1NzIsImV4cCI6MjEwNzU4MzU3Mn0.1ucBitkEPPipVHarfk-FWQWp7-1jX11B5cruJs8YMmQ',
+  bucket:'kyrozine',
+  lib:'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js',
+  on:false, code:'', id:'', name:'', color:'', client:null, ch:null,
+  peers:{}, cursors:{}, sig:{}, setSig:'', spreadSig:{},
+  hashOf:new Map(), assets:new Map(), uploaded:new Set(),
+  incoming:{}, pending:[], chain:Promise.resolve(), busy:false,
+  suspendFile:false, awaiting:false, sendT:0, cursorT:0, lastPage:-1, failedUp:false, ovRaf:0,
+  tx:null, lan:null            // tx: the transport in use; lan: info from the desktop app's server, when there is one
+};
+const COLLAB_COLORS = ['#d9381a','#2f5aa8','#2b6b58','#e86aa6','#f08a24','#7a4fd0','#0f9fb0','#b8860b'];
+const COLLAB_EXT = {'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif'};
+const COLLAB_CHUNK = 60000;
+
+function collabNewCode(){
+  const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = '';
+  crypto.getRandomValues(new Uint8Array(8)).forEach(b=> s += a[b % a.length]);
+  return s;
+}
+function collabLink(){
+  const base = (collab.lan && collab.lan.urls && collab.lan.urls[0]) ? collab.lan.urls[0] : location.origin+location.pathname;
+  return base+'#sala='+collab.code;
+}
+
+/* ----- pictures: data URL <-> {$asset} reference ----- */
+async function collabHash(str){
+  let h = collab.hashOf.get(str);
+  if(h) return h;
+  const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(str));
+  h = [...new Uint8Array(buf)].map(b=> b.toString(16).padStart(2,'0')).join('');
+  collab.hashOf.set(str, h);
+  collab.assets.set(h, str);
+  return h;
+}
+async function collabUpload(h, dataUrl, ext, mime){
+  if(collab.uploaded.has(h)) return true;
+  const blob = await (await fetch(dataUrl)).blob();
+  if(!(await collab.tx.upload('rooms/'+collab.code+'/'+h+'.'+ext, blob, mime))) return false;
+  collab.uploaded.add(h);
+  return true;
+}
+async function collabPack(v){
+  if(typeof v==='string'){
+    if(v.length>256 && v.indexOf('data:image/')===0){
+      const mime = (v.match(/^data:([^;,]+)/)||[])[1] || '';
+      const ext = COLLAB_EXT[mime];
+      const h = ext ? await collabHash(v) : null;
+      if(!ext || !(await collabUpload(h, v, ext, mime))){
+        if(!collab.failedUp){ collab.failedUp = true; showToast('Una imagen no se pudo compartir con la sala (formato no admitido).'); }
+        return '';
+      }
+      return {$asset:h, ext};
+    }
+    return v;
+  }
+  if(Array.isArray(v)){ const o = []; for(const x of v) o.push(await collabPack(x)); return o; }
+  if(v && typeof v==='object'){ const o = {}; for(const k of Object.keys(v)) o[k] = await collabPack(v[k]); return o; }
+  return v;
+}
+async function collabFetchAsset(h, ext){
+  if(collab.assets.has(h)) return collab.assets.get(h);
+  const r = await fetch(collab.tx.assetUrl('rooms/'+collab.code+'/'+h+'.'+ext));
+  if(!r.ok) return '';
+  const blob = await r.blob();
+  const du = await new Promise(res=>{ const fr = new FileReader(); fr.onload = ()=> res(fr.result); fr.readAsDataURL(blob); });
+  collab.assets.set(h, du); collab.hashOf.set(du, h); collab.uploaded.add(h);
+  return du;
+}
+async function collabUnpack(v){
+  if(Array.isArray(v)){ const o = []; for(const x of v) o.push(await collabUnpack(x)); return o; }
+  if(v && typeof v==='object'){
+    if(typeof v.$asset==='string') return collabFetchAsset(v.$asset, v.ext);
+    const o = {}; for(const k of Object.keys(v)) o[k] = await collabUnpack(v[k]); return o;
+  }
+  return v;
+}
+
+/* ----- transport: chunked broadcast ----- */
+async function collabSend(k, obj, to){
+  if(!collab.on || !collab.tx) return;
+  const json = JSON.stringify(obj);
+  const n = Math.max(1, Math.ceil(json.length/COLLAB_CHUNK));
+  const id = collab.id.slice(0,6)+Math.random().toString(36).slice(2,8);
+  for(let i=0;i<n;i++){
+    collab.tx.send({k, to:to||null, id, i, n, d:json.slice(i*COLLAB_CHUNK, (i+1)*COLLAB_CHUNK), from:collab.id});
+    if(n>1) await new Promise(r=> setTimeout(r, 25));
+  }
+}
+function collabRecv(p){
+  if(!p || (p.to && p.to!==collab.id) || p.from===collab.id) return;
+  if(!(p.n>0 && p.n<=2000)) return;
+  const now = Date.now();
+  Object.keys(collab.incoming).forEach(id=>{ if(now-collab.incoming[id].t > 90000) delete collab.incoming[id]; });
+  const b = collab.incoming[p.id] || (collab.incoming[p.id] = {n:p.n, parts:[], got:0, t:now});
+  if(b.parts[p.i]===undefined){ b.parts[p.i] = p.d; b.got++; }
+  if(b.got<b.n) return;
+  delete collab.incoming[p.id];
+  let data;
+  try{ data = JSON.parse(b.parts.join('')); }catch(err){ return; }
+  /* in order, even when pictures take different times to arrive */
+  collab.chain = collab.chain.then(()=> collabHandle(p.k, data, p.from)).catch(()=>{});
+}
+async function collabHandle(k, d, from){
+  if(k==='cursor'){
+    collab.cursors[from] = Object.assign({}, d, {t:Date.now()});
+    collabOverlaySoon();
+    return;
+  }
+  if(k==='hello'){
+    const ids = Object.keys(collab.peers).filter(x=> x!==from).sort();
+    if(ids[0]!==collab.id) return;
+    const snap = await collabPack({pages:state.pages, spreads:state.spreads||{}, pageCount:state.pageCount,
+      pageSize:state.pageSize, sheetSize:state.sheetSize, customFonts:state.customFonts||[], layoutV:state.layoutV});
+    collabSend('snapshot', snap, from);
+    return;
+  }
+  const data = await collabUnpack(d);
+  const run = ()=> collabApply(k, data);
+  if(k==='snapshot' || !collab.busy) run(); else collab.pending.push(run);
+}
+
+/* ----- applying what arrives ----- */
+function collabPatchHistory(fn){
+  try{ history.forEach(h=>{ if(h && h.pages) fn(h); }); }catch(err){}
+}
+function collabApply(k, d){
+  if(!collab.on) return;
+  if(k==='snapshot'){
+    if(!collab.awaiting) return;
+    collab.awaiting = false;
+    clearTimeout(collab.helloT);
+    state.pages = d.pages || [];
+    state.spreads = d.spreads || {};
+    ['pageCount','pageSize','sheetSize','customFonts','layoutV'].forEach(f=>{ if(d[f]!==undefined) state[f] = d[f]; });
+    state.currentIndex = 0;
+    migrateState(); ensurePages();
+    pendingHistory = null; historyInit();
+    collabBaseline();
+    collab.suspendFile = true;       // the room must not overwrite the .kyro file linked on this computer
+    registerCustomFonts();
+    loadAllImages(()=>{ syncHeaderUI(); renderAll(); persist(); showToast('Entraste a la sala '+collab.code+'.'); });
+    return;
+  }
+  if(k==='settings'){
+    state.pageCount = d.pageCount; state.pageSize = d.pageSize; state.sheetSize = d.sheetSize;
+    migrateState(); ensurePages();
+    if(state.currentIndex>=state.pageCount) state.currentIndex = state.pageCount-1;
+    collab.setSig = sigOf({pc:state.pageCount, ps:state.pageSize, ss:state.sheetSize});
+    syncHeaderUI();
+  } else if(k==='page'){
+    if(!(d.i>=0 && d.i<state.pageCount)) return;
+    state.pages[d.i] = d.page;
+    ensurePages();
+    const i = d.i, copy = cloneDeep(state.pages[i]);
+    collabPatchHistory(h=>{ if(h.pages[i]) h.pages[i] = cloneDeep(copy); });   // undo must not undo other people's work
+    collab.sig[i] = sigOf(state.pages[i]);
+  } else if(k==='spread'){
+    if(!state.spreads) state.spreads = {};
+    if(d.sp){ state.spreads[d.key] = d.sp; } else delete state.spreads[d.key];
+    migrateState(); ensurePages();
+    const key = d.key, sp = state.spreads[key] ? cloneDeep(state.spreads[key]) : null;
+    collabPatchHistory(h=>{ if(!h.spreads) h.spreads = {}; if(sp) h.spreads[key] = cloneDeep(sp); else delete h.spreads[key]; });
+    collab.spreadSig[key] = sp ? sigOf(sp) : '';
+  } else return;
+  loadAllImages(()=>{ renderAll(); persist(); });
+}
+function collabBaseline(){
+  collab.sig = {};
+  state.pages.forEach((p,i)=>{ collab.sig[i] = sigOf(p); });
+  collab.spreadSig = {};
+  Object.keys(state.spreads||{}).forEach(k=>{ collab.spreadSig[k] = sigOf(state.spreads[k]); });
+  collab.setSig = sigOf({pc:state.pageCount, ps:state.pageSize, ss:state.sheetSize});
+}
+
+/* ----- sending what I changed ----- */
+function collabSoon(){
+  if(!collab.on || collab.awaiting) return;
+  clearTimeout(collab.sendT);
+  collab.sendT = setTimeout(collabDiff, 300);
+}
+async function collabDiff(){
+  if(!collab.on || collab.awaiting) return;
+  const out = [];
+  const ss = sigOf({pc:state.pageCount, ps:state.pageSize, ss:state.sheetSize});
+  if(ss!==collab.setSig){
+    collab.setSig = ss;
+    out.push(['settings', {pageCount:state.pageCount, pageSize:state.pageSize, sheetSize:state.sheetSize}]);
+  }
+  state.pages.forEach((p,i)=>{
+    const s = sigOf(p);
+    if(collab.sig[i]!==s){ collab.sig[i] = s; out.push(['page', {i, page:p}]); }
+  });
+  const keys = new Set(Object.keys(state.spreads||{}).concat(Object.keys(collab.spreadSig)));
+  keys.forEach(key=>{
+    const sp = state.spreads && state.spreads[key];
+    const s = sp ? sigOf(sp) : '';
+    if((collab.spreadSig[key]||'')!==s){ collab.spreadSig[key] = s; out.push(['spread', {key, sp:sp||null}]); }
+  });
+  for(const [k,d] of out){
+    try{ collabSend(k, await collabPack(d)); }catch(err){ showToast('No pude enviar un cambio a la sala.'); }
+  }
+}
+
+/* ----- who is here, and where ----- */
+function collabPeersChanged(peers){
+  collab.peers = peers;
+  Object.keys(collab.cursors).forEach(id=>{ if(!peers[id]) delete collab.cursors[id]; });
+  collabRenderPanel();
+}
+function collabTrack(){
+  if(!collab.tx) return;
+  collab.tx.track({name:collab.name, color:collab.color, page:state.currentIndex});
+}
+function collabPresence(){            // called after each render
+  if(collab.on && collab.lastPage!==state.currentIndex){ collab.lastPage = state.currentIndex; collabTrack(); }
+}
+function collabOverlaySoon(){
+  if(collab.ovRaf) return;
+  collab.ovRaf = requestAnimationFrame(()=>{
+    collab.ovRaf = 0;
+    renderStageOverlay(document.getElementById('stage-canvas'));
+  });
+}
+function drawRemoteCursors(ctx, M, disp){
+  const now = Date.now(), {w} = pageMm(), pp = PREVIEW_PPMM;
+  Object.keys(collab.cursors).forEach(id=>{
+    const c = collab.cursors[id], peer = collab.peers[id];
+    if(!peer || now-c.t>5000 || !pageIdxVisible(c.idx)) return;
+    const x = slotOfIndex(c.idx)*w*pp + c.x*pp, y = c.y*pp, s = 1/disp;
+    ctx.save();
+    ctx.translate(M+x, M+y);
+    ctx.fillStyle = peer.color; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5*s;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,15*s); ctx.lineTo(4*s,11.5*s); ctx.lineTo(8.5*s,11.5*s); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.font = '600 '+(12*s)+'px Poppins,sans-serif';
+    const label = peer.name || '';
+    const tw = ctx.measureText(label).width;
+    ctx.fillStyle = peer.color;
+    ctx.fillRect(10*s, 12*s, tw+10*s, 18*s);
+    ctx.fillStyle = '#fff';
+    ctx.fillText(label, 15*s, 25*s);
+    ctx.restore();
+  });
+}
+(function initCollabEvents(){
+  const sc = document.getElementById('stage-scroll');
+  sc.addEventListener('pointermove', e=>{
+    if(!collab.on || collab.awaiting) return;
+    const t = performance.now();
+    if(t-collab.cursorT<80) return;
+    collab.cursorT = t;
+    const canvas = document.getElementById('stage-canvas');
+    const hit = hitPageAt(canvas, e.clientX), r = canvas.getBoundingClientRect();
+    if(!hit || e.clientY<r.top || e.clientY>r.bottom) return;
+    const k = canvas.width/Math.max(1, r.width), pp = PREVIEW_PPMM, {w} = pageMm();
+    collabSend('cursor', {idx:hit.idx, x:((e.clientX-r.left)*k - hit.slot*w*pp)/pp, y:(e.clientY-r.top)*k/pp});
+  });
+  /* never apply a remote change in the middle of my own drag */
+  document.addEventListener('pointerdown', ()=>{ collab.busy = true; }, true);
+  const free = ()=>{
+    collab.busy = false;
+    setTimeout(()=>{ if(collab.busy) return; const q = collab.pending; collab.pending = []; q.forEach(fn=> fn()); }, 30);
+  };
+  document.addEventListener('pointerup', free, true);
+  document.addEventListener('pointercancel', free, true);
+})();
+
+/* ----- transports: Supabase (internet) or the desktop app's own server (LAN) ----- */
+function collabSupabaseTx(code){
+  return new Promise((resolve, reject)=>{
+    const client = window.supabase.createClient(collab.url, collab.key);
+    const ch = client.channel('kyro:'+code, {config:{broadcast:{self:false, ack:false}, presence:{key:collab.id}}});
+    ch.on('broadcast', {event:'m'}, m=> collabRecv(m.payload));
+    ch.on('presence', {event:'sync'}, ()=>{
+      const st = ch.presenceState(), peers = {};
+      Object.keys(st).forEach(key=>{ const m = st[key][0]; if(m) peers[key] = m; });
+      collabPeersChanged(peers);
+    });
+    const to = setTimeout(()=>{ try{ client.removeAllChannels(); }catch(err){} reject(new Error('timeout')); }, 12000);
+    ch.subscribe(st=>{
+      if(st==='SUBSCRIBED'){
+        clearTimeout(to);
+        resolve({
+          send(payload){ ch.send({type:'broadcast', event:'m', payload}); },
+          track(meta){ ch.track(meta); },
+          async upload(path, blob, mime){
+            const {error} = await client.storage.from(collab.bucket).upload(path, blob, {contentType:mime, upsert:false});
+            return !error || /exist|duplicate/i.test(error.message||'');
+          },
+          assetUrl(path){ return collab.url+'/storage/v1/object/public/'+collab.bucket+'/'+path; },
+          close(){ try{ ch.unsubscribe(); client.removeAllChannels(); }catch(err){} }
+        });
+      } else if(st==='CHANNEL_ERROR' || st==='TIMED_OUT'){ clearTimeout(to); reject(new Error(st)); }
+    });
+  });
+}
+function collabLanTx(code){
+  return new Promise((resolve, reject)=>{
+    const proto = location.protocol==='https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(proto+'//'+location.host+'/ws?room='+encodeURIComponent(code)+'&id='+encodeURIComponent(collab.id));
+    const to = setTimeout(()=>{ try{ ws.close(); }catch(err){} reject(new Error('timeout')); }, 8000);
+    let opened = false;
+    const tx = {
+      send(payload){ if(ws.readyState===1) ws.send(JSON.stringify({t:'bc', payload})); },
+      track(meta){ if(ws.readyState===1) ws.send(JSON.stringify({t:'track', meta})); },
+      async upload(path, blob, mime){
+        try{ const r = await fetch('/asset/'+path, {method:'PUT', body:blob, headers:{'Content-Type':mime}}); return r.ok; }
+        catch(err){ return false; }
+      },
+      assetUrl(path){ return '/asset/'+path; },
+      close(){ opened = false; try{ ws.close(); }catch(err){} }
+    };
+    ws.onopen = ()=>{ clearTimeout(to); opened = true; resolve(tx); };
+    ws.onerror = ()=>{ if(!opened){ clearTimeout(to); reject(new Error('ws')); } };
+    ws.onmessage = ev=>{
+      let m; try{ m = JSON.parse(ev.data); }catch(err){ return; }
+      if(m.t==='bc') collabRecv(m.payload);
+      else if(m.t==='presence') collabPeersChanged(m.peers || {});
+    };
+    ws.onclose = ()=>{ if(opened && collab.on){ opened = false; collabLeave(true); showToast('Se cortó la conexión con la sala.'); } };
+  });
+}
+
+/* ----- joining and leaving ----- */
+async function collabStart(code, creating){
+  code = String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(code.length<4){ showToast('Poné el código de la sala.'); return; }
+  const nameInput = document.getElementById('collab-name');
+  const name = (nameInput.value||'').trim().slice(0,24);
+  if(!name){ showToast('Poné tu nombre para que te vean.'); nameInput.focus(); return; }
+  if(!creating && state.pages.some(p=> !pageIsEmpty(p))){
+    const ok = await confirmDialog('Entrar a la sala', 'Tu proyecto actual en pantalla se reemplaza por el de la sala. Guardalo antes si querés conservarlo. ¿Entrar?');
+    if(!ok) return;
+  }
+  try{ localStorage.setItem('kyro-collab-name', name); }catch(err){}
+  showToast('Conectando a la sala…');
+  if(!collab.lan){
+    try{ await loadScriptOnce(collab.lib, ()=> !!(window.supabase && window.supabase.createClient)); }
+    catch(err){ showToast('No pude cargar la colaboración (revisá tu conexión a internet).'); return; }
+  }
+  collab.id = (crypto.randomUUID && crypto.randomUUID()) || (Date.now()+'-'+Math.random().toString(36).slice(2));
+  collab.name = name;
+  collab.color = COLLAB_COLORS[Math.floor(Math.random()*COLLAB_COLORS.length)];
+  collab.code = code;
+  collab.uploaded = new Set();
+  try{
+    collab.tx = collab.lan ? await collabLanTx(code) : await collabSupabaseTx(code);
+  }catch(err){ collabLeave(true); showToast('No pude conectarme a la sala.'); return; }
+  collab.on = true;
+  collab.lastPage = state.currentIndex;
+  collab.suspendFile = false;
+  collabTrack();
+  collabBaseline();
+  window.history.replaceState(null, '', '#sala='+code);
+  if(creating){
+    showToast('Sala '+code+' creada. Copiá el enlace y mandalo.');
+  } else {
+    collab.awaiting = true;
+    setTimeout(()=> collab.tx && collab.tx.send({k:'hello', n:1, i:0, id:'h'+collab.id.slice(0,8), d:'{}', from:collab.id}), 600);
+    collab.helloT = setTimeout(()=>{
+      if(!collab.awaiting) return;
+      collab.awaiting = false;
+      showToast('La sala está vacía: seguís con tu proyecto.');
+    }, 6000);
+  }
+  collabRenderPanel();
+}
+function collabLeave(silent){
+  clearTimeout(collab.sendT); clearTimeout(collab.helloT);
+  try{ if(collab.tx) collab.tx.close(); }catch(err){}
+  collab.on = false; collab.awaiting = false; collab.tx = null;
+  collab.peers = {}; collab.cursors = {}; collab.suspendFile = false; collab.pending = [];
+  if(location.hash.indexOf('sala=')>=0) window.history.replaceState(null, '', location.pathname+location.search);
+  collabRenderPanel();
+  renderStageOverlay(document.getElementById('stage-canvas'));
+  if(!silent) showToast('Saliste de la sala.');
+}
+
+/* ----- panel ----- */
+function collabRenderPanel(){
+  const btn = document.getElementById('collab-btn');
+  btn.classList.toggle('live', collab.on);
+  const chip = document.getElementById('collab-chip');
+  chip.textContent = collab.lan ? 'en tu red' : 'por internet';
+  chip.classList.toggle('lan', !!collab.lan);
+  document.getElementById('collab-off').hidden = collab.on;
+  document.getElementById('collab-live').hidden = !collab.on;
+  if(!collab.on) return;
+  document.getElementById('collab-code-label').textContent = collab.code;
+  const peers = collab.peers;
+  document.getElementById('collab-peers').innerHTML = Object.keys(peers).sort().map(id=>{
+    const p = peers[id];
+    const you = id===collab.id ? ' (vos)' : '';
+    return '<span class="collab-peer"><span class="collab-dot" style="background:'+(p.color||'#888')+'"></span>'+
+      '<span class="nm">'+String(p.name||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')+you+'</span>'+
+      '<span class="collab-pg">p.'+((p.page||0)+1)+'</span></span>';
+  }).join('');
+}
+(function initCollabPanel(){
+  const btn = document.getElementById('collab-btn'), panel = document.getElementById('collab-panel');
+  try{ document.getElementById('collab-name').value = localStorage.getItem('kyro-collab-name') || ''; }catch(err){}
+  const open = ()=>{
+    panel.hidden = false;
+    const r = btn.getBoundingClientRect(), w = panel.offsetWidth;
+    /* its right edge lines up with the button, and it never leaves the window */
+    panel.style.left = Math.max(8, Math.min(window.innerWidth-w-8, r.right-w))+'px';
+    panel.style.top = r.bottom+10+'px';
+  };
+  btn.addEventListener('click', ()=>{ if(panel.hidden) open(); else panel.hidden = true; });
+  document.getElementById('collab-close').addEventListener('click', ()=>{ panel.hidden = true; });
+  document.getElementById('collab-create').addEventListener('click', ()=> collabStart(collabNewCode(), true));
+  document.getElementById('collab-enter').addEventListener('click', ()=> collabStart(document.getElementById('collab-code').value, false));
+  document.getElementById('collab-leave').addEventListener('click', ()=> collabLeave());
+  collabRenderPanel();
+  document.getElementById('collab-copy').addEventListener('click', async ()=>{
+    try{ await navigator.clipboard.writeText(collabLink()); showToast('Enlace copiado.'); }
+    catch(err){ window.prompt('Copiá este enlace', collabLink()); }
+  });
+  document.addEventListener('pointerdown', e=>{
+    if(panel.hidden || panel.contains(e.target) || e.target.closest('#collab-btn') || e.target.closest('.modal')) return;
+    panel.hidden = true;
+  });
+  /* served by the desktop app: rooms live on this network, no internet needed */
+  if(location.protocol==='http:'){
+    fetch('lan-info', {cache:'no-store'}).then(r=> r.ok ? r.json() : null).then(info=>{
+      if(!info || !info.lan) return;
+      collab.lan = info;
+      const el = document.getElementById('collab-lan');
+      el.hidden = false;
+      el.innerHTML = '<span class="collab-label">Otros entran desde</span>' +
+        (info.urls||[]).map(u=> '<button type="button" class="collab-url" data-url="'+u+'" title="Copiar"><span>'+u.replace(/^https?:\/\//,'')+'</span></button>').join('');
+      el.querySelectorAll('.collab-url').forEach(b=> b.addEventListener('click', async ()=>{
+        try{ await navigator.clipboard.writeText(b.dataset.url); showToast('Dirección copiada.'); }
+        catch(err){ window.prompt('Copiá esta dirección', b.dataset.url); }
+      }));
+      collabRenderPanel();
+    }).catch(()=>{});
+  }
+  /* opened from an invitation link */
+  const m = location.hash.match(/sala=([A-Za-z0-9]{4,12})/);
+  if(m){
+    document.getElementById('collab-code').value = m[1].toUpperCase();
+    setTimeout(()=>{ open(); showToast('Te invitaron a una sala: poné tu nombre y tocá Entrar.'); }, 600);
+  }
+})();
+
 /* ---------- render all ---------- */
 function renderAll(){
   ensurePages();
+  if(window.collab && collab.on) collabPresence();
   renderSidebar();
   /* don't rebuild the panel under the cursor while someone is typing in it */
   const ae = document.activeElement;
@@ -5792,6 +6384,7 @@ document.addEventListener('keydown', e=>{
     if(!text){ hide(); return; }
     if(el===cur) return;
     cur = el;
+    if(window.kyroSpeak && text.length<=40) window.kyroSpeak(text);
     tip.textContent = text;
     tip.classList.add('show');
     const r = el.getBoundingClientRect(), tr = tip.getBoundingClientRect();
@@ -5805,6 +6398,44 @@ document.addEventListener('keydown', e=>{
   document.addEventListener('pointerdown', hide, true);
   document.addEventListener('scroll', hide, true);
   document.addEventListener('pointerout', e=>{ if(!e.relatedTarget) hide(); });
+})();
+/* robotic voice: says the name of whatever button the pointer lands on, with
+   the browser's own speech synthesis (the voices depend on the system) */
+(function initVoice(){
+  const synth = window.speechSynthesis;
+  let on = false, last = '', lastT = 0, voice = null;
+  try{ on = localStorage.getItem('kyro-voice')==='1'; }catch(err){}
+  const paint = ()=> document.querySelectorAll('#voice-toggle button').forEach(b=> b.classList.toggle('active', (b.dataset.v==='on')===on));
+  const pick = ()=>{
+    const list = synth ? synth.getVoices() : [];
+    const es = list.filter(v=> /^es/i.test(v.lang));
+    voice = es.find(v=> /jorge|diego|juan|pablo|raul|carlos|male|hombre/i.test(v.name)) || es[0] || null;
+  };
+  if(synth){ pick(); synth.addEventListener && synth.addEventListener('voiceschanged', pick); }
+  window.kyroSpeak = (text, force)=>{
+    if(!synth || !(on || force)) return;
+    const clean = String(text).replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+    const now = performance.now();
+    if(!clean || (clean===last && now-lastT<900)) return;
+    last = clean; lastT = now;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = voice ? voice.lang : 'es-ES';
+    if(voice) u.voice = voice;
+    u.pitch = 0.05;     // as low and flat as the engine allows
+    u.rate = 0.8;
+    synth.speak(u);
+  };
+  document.querySelectorAll('#voice-toggle button').forEach(b=> b.addEventListener('click', ()=>{
+    on = b.dataset.v==='on';
+    try{ localStorage.setItem('kyro-voice', on ? '1' : '0'); }catch(err){}
+    paint();
+    if(on){
+      if(!synth) showToast('Tu navegador no tiene síntesis de voz.');
+      else window.kyroSpeak('Voz robótica activada', true);
+    } else if(synth) synth.cancel();
+  }));
+  paint();
 })();
 document.getElementById('undo-btn').addEventListener('click', undo);
 document.getElementById('redo-btn').addEventListener('click', redo);
