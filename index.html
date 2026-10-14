@@ -2,8 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Kyro Zine Generator — Hacedor de zines</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap">
@@ -416,9 +417,9 @@ body.focus-mode .view-zoom,body.focus-mode .stage-label{display:none}
 .layer-eye,.layer-mv{width:28px;height:28px;border-radius:50%;background:transparent;color:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:none}
 .layer-eye:hover,.layer-mv:hover{background:rgba(22,19,15,.12);transform:none;box-shadow:none}
 .layer.selected .layer-eye:hover,.layer.selected .layer-mv:hover{background:rgba(255,255,255,.2)}
-.layer{touch-action:none;user-select:none;transition:transform .16s ease,opacity .16s ease,background .15s ease}
+.layer{touch-action:pan-y;user-select:none;transition:transform .16s ease,opacity .16s ease,background .15s ease}
 .layer.dragging{opacity:.5;transition:none;position:relative;z-index:3;cursor:grabbing;box-shadow:5px 6px 0 var(--text)}
-.layer-grip{opacity:.45;display:flex;align-items:center;padding-right:.35rem;cursor:grab}
+.layer-grip{opacity:.45;display:flex;align-items:center;padding-right:.35rem;cursor:grab;touch-action:none}
 .layer.selected .layer-grip{opacity:.7}
 .layer-swatch{width:16px;height:16px;border-radius:50%;padding:0;border:none;box-shadow:none;flex-shrink:0;display:inline-block}
 .layer-swatch:hover{transform:scale(1.2)}
@@ -496,14 +497,14 @@ html.dark .upload-fab:hover{color:#16130f}
 
 @media (max-width:700px){
   :root{--lift:3px 3px 0 var(--text);--lift-hi:4px 4px 0 var(--text)}
-  html,body{height:100%;height:100dvh;overscroll-behavior:none}
+  html,body{height:100%;height:var(--app-height,100dvh);overscroll-behavior:none}
   body{font-size:15px}
   header{height:54px;padding:0 max(.65rem,env(safe-area-inset-right)) 0 max(.65rem,env(safe-area-inset-left))}
   .logo{font-size:1rem;max-width:calc(100vw - 172px);overflow:hidden;text-overflow:ellipsis}
   .header-right{gap:.45rem}
   .mini-btn.round,.export-btn.round{width:42px;height:42px}
 
-  .workspace{height:calc(100vh - 54px);height:calc(100dvh - 54px);display:grid;
+  .workspace{height:calc(100vh - 54px);height:calc(var(--app-height,100dvh) - 54px);display:grid;
     grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(220px,1fr) minmax(150px,30dvh) 112px}
   #main-area{grid-row:1;min-height:0}
   #side-right{grid-row:2;width:100%;min-width:0;border-top:3px solid var(--stamp)}
@@ -522,14 +523,19 @@ html.dark .upload-fab:hover{color:#16130f}
   .pagecount-row{min-width:96px;justify-content:center;margin:0}
   .clear-btn{height:44px;padding:.35rem .55rem;white-space:normal;line-height:1.05}
 
-  .tool-row{top:.5rem;left:.35rem;right:.35rem;padding:0 .25rem;justify-content:flex-start;flex-wrap:nowrap;
-    gap:.5rem;overflow-x:auto;overflow-y:visible;scrollbar-width:none;overscroll-behavior-x:contain}
-  .tool-row::-webkit-scrollbar{display:none}
-  #undo-redo{position:static;transform:none;flex-shrink:0}
-  .toolbar,.tool-options{min-height:44px;flex:0 0 auto;flex-wrap:nowrap}
-  .tb{width:40px;height:40px;flex-shrink:0}
-  .tool-options{max-width:none}
-  #stage-scroll{padding:58px 0 52px}
+  .tool-row{top:.45rem;left:.35rem;right:.35rem;padding:0;display:grid;
+    grid-template-columns:46px auto;grid-template-areas:"undo tools" "options options";
+    justify-content:center;align-items:start;gap:.45rem;overflow:visible}
+  #undo-redo{position:static;grid-area:undo;transform:none;display:flex;flex-direction:column;min-height:0;flex-shrink:0}
+  #toolbar{grid-area:tools;display:grid;grid-template-columns:repeat(4,42px);min-height:0}
+  #tool-options{grid-area:options;max-width:calc(100vw - 1rem);min-height:44px;overflow-x:auto;overflow-y:hidden;
+    flex-wrap:nowrap;justify-self:center;scrollbar-width:none;overscroll-behavior-x:contain}
+  #tool-options::-webkit-scrollbar{display:none}
+  #tool-options:empty{display:none}
+  .tool-row:not(.has-options)~#stage-scroll{padding-top:58px}
+  .toolbar,.tool-options{flex:0 0 auto}
+  .tb{width:42px;height:42px;flex-shrink:0}
+  #stage-scroll{padding:108px 0 52px}
   .nav-arrow{width:44px;height:44px;top:auto;bottom:.55rem;transform:none}
   .nav-arrow:hover{transform:scale(1.05)}
   .nav-arrow:active{transform:scale(.92)}
@@ -564,6 +570,9 @@ html.dark .upload-fab:hover{color:#16130f}
   .howto-steps{grid-template-columns:1fr}
   .toast{bottom:calc(124px + env(safe-area-inset-bottom));width:calc(100% - 1.3rem);text-align:center;white-space:normal}
   #tip,#brush-cursor{display:none!important}
+  input,select,textarea{font-size:16px!important}
+  body.focus-mode .workspace{grid-template-rows:minmax(0,1fr)}
+  body.focus-mode #main-area{grid-row:1}
 }
 
 @media (max-width:390px){
@@ -573,9 +582,37 @@ html.dark .upload-fab:hover{color:#16130f}
   .workspace{grid-template-rows:minmax(200px,1fr) minmax(140px,28dvh) 104px}
   #sidebar{height:104px}
   .sheet-thumb{height:80px;width:94px;min-width:94px}
+  #toolbar{grid-template-columns:repeat(4,40px)}
   .toolbar,.tool-options{padding:.2rem}
-  .tb{width:38px;height:38px}
+  .tb{width:40px;height:40px}
   .align-bar{display:none}
+}
+
+@media (max-width:700px) and (orientation:landscape){
+  header{height:50px}
+  .workspace{height:calc(100vh - 50px);height:calc(100dvh - 50px);grid-template-columns:minmax(0,1fr) 190px;
+    grid-template-rows:minmax(180px,1fr) 92px}
+  #main-area{grid-column:1;grid-row:1}
+  #side-right{grid-column:2;grid-row:1;border-top:0;border-left:3px solid var(--stamp)}
+  #sidebar{grid-column:1 / -1;grid-row:2;height:92px}
+  .sheet-thumb{height:69px}
+  .tool-row{display:flex;justify-content:center;align-items:flex-start;flex-wrap:nowrap;overflow-x:auto;padding:0 .25rem}
+  #undo-redo{display:flex;flex-direction:row;position:static;transform:none}
+  #toolbar{display:flex}
+  #tool-options{max-width:none;overflow:visible}
+  .tb{width:36px;height:36px}
+  .toolbar,.tool-options{min-height:40px;padding:.15rem}
+  #stage-scroll{padding:50px 0 48px}
+  .stage-label{bottom:.55rem;left:3.7rem;max-width:calc(100% - 7.4rem)}
+  .align-bar{display:none}
+  body.focus-mode .workspace{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+}
+
+@media (hover:none) and (pointer:coarse){
+  .sheet-page-cell .thumb-del{opacity:1;width:28px;height:28px}
+  .mini-btn:hover,.pill:hover,.ib:hover,.clear-btn:hover,.tb:hover,.paper-opt:hover,.page-opt:hover,
+  .preview-btn:hover,.nav-arrow:hover,.preview-close:hover,.preview-ctrl-btn:hover,.upload-fab:hover{
+    transform:none;box-shadow:var(--lift)}
 }
 </style>
 </head>
@@ -751,6 +788,19 @@ html.dark .upload-fab:hover{color:#16130f}
 <script>
 (function(){
 "use strict";
+
+/* Mobile browsers do not always include the on-screen keyboard in 100dvh.
+   Keep the app fitted to the actually visible viewport when that API exists. */
+function syncVisibleViewport(){
+  const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty('--app-height', Math.round(h)+'px');
+}
+syncVisibleViewport();
+window.addEventListener('resize', syncVisibleViewport, {passive:true});
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', syncVisibleViewport, {passive:true});
+  window.visualViewport.addEventListener('scroll', syncVisibleViewport, {passive:true});
+}
 
 /* ---------- constants ---------- */
 const PAPER_DIMS = { A4:{w:210,h:297}, A3:{w:297,h:420} };           // portrait mm — what goes through the printer
@@ -1749,6 +1799,11 @@ function wheelBind(input, step, get, set){
 function renderToolOptions(){
   const el = document.getElementById('tool-options');
   closeBrushPopover();
+  /* These controls are already available in the edit panel. The duplicate
+     floating strip covered the canvas, particularly on mobile screens. */
+  el.replaceChildren();
+  el.closest('.tool-row').classList.remove('has-options');
+  return;
   let html = '';
   if(tool==='brush' || tool==='eraser'){
     const st = brushState();
@@ -1761,6 +1816,7 @@ function renderToolOptions(){
     }
   }
   el.innerHTML = html;
+  el.closest('.tool-row').classList.toggle('has-options', !!html);
   el.querySelectorAll('[data-target]').forEach(b=> b.addEventListener('click', ()=>{ target = b.dataset.target; renderToolOptions(); renderStage(); }));
   if(tool==='brush' || tool==='eraser'){
     const st = brushState();
@@ -2672,6 +2728,12 @@ function bindLayers(panel, page){
   rows.forEach((row, idx)=>{
     row.addEventListener('pointerdown', e=>{
       if(e.button!==0 || e.target.closest('[data-eye]') || e.target.closest('[data-del]')) return;
+      /* On touch, ordinary rows remain vertically scrollable. Reordering is
+         intentionally limited to the visible grip. */
+      if(e.pointerType==='touch' && !e.target.closest('.layer-grip')){
+        select(row.dataset.layer);
+        return;
+      }
       const gap = 6, h = row.offsetHeight + gap;
       const st = {y0:e.clientY, moved:false, to:idx};
       row.setPointerCapture(e.pointerId);
