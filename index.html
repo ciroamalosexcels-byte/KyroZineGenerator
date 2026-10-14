@@ -295,8 +295,8 @@ select.plain-select{padding:.45rem 2.6rem .45rem 1rem;border:none;border-radius:
   font-family:'Courier Prime',monospace;font-weight:700;font-size:.82rem;color:var(--text);text-align:left;box-shadow:2px 2px 0 var(--text);overflow:hidden}
 .collab-url span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .collab-url:hover{background:var(--hl)}
-.ticket{--r:9px;--sx:72%;position:relative;filter:drop-shadow(4px 4px 0 var(--text));transform:rotate(-1.5deg);margin:.2rem .2rem .3rem}
-.ticket-body{position:relative;display:grid;grid-template-columns:72% 28%;min-height:104px;border-radius:12px;background:var(--hl);
+.ticket{--r:9px;--sx:88%;position:relative;filter:drop-shadow(4px 4px 0 var(--text));transform:rotate(-1.5deg);margin:.2rem .2rem .3rem}
+.ticket-body{position:relative;display:grid;grid-template-columns:88% 12%;min-height:104px;border-radius:12px;background:var(--hl);
   -webkit-mask:radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000),radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000),
     radial-gradient(circle var(--r) at var(--sx) 0,#0000 97%,#000),radial-gradient(circle var(--r) at var(--sx) 100%,#0000 97%,#000);
   -webkit-mask-composite:source-in;
@@ -355,7 +355,8 @@ body.collab-open #edit-panel{display:none}
 #collab-side .ticket-main{padding:.7rem .5rem .7rem .9rem;gap:.4rem}
 #collab-side .ticket-main .collab-code{font-size:1.2rem;letter-spacing:.06em}
 #collab-side .ticket-body{min-height:92px}
-.ticket-project{font-weight:800;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;opacity:.55;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ticket-project{font-weight:800;font-size:.68rem;letter-spacing:.08em;line-height:1.25;text-transform:uppercase;opacity:.55;max-width:100%;text-align:center;
+  word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .collab-tools{display:flex;gap:.5rem;flex-wrap:wrap}
 .collab-tools .ib.active{background:var(--text);color:var(--bg-card)}
 #collab-qr{align-self:center;width:min(200px,100%);height:auto;border-radius:10px;box-shadow:3px 3px 0 var(--text);image-rendering:pixelated;background:#fff}
