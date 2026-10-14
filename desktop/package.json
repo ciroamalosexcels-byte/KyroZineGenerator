@@ -1,0 +1,58 @@
+{
+  "name": "kyro-zine-generator-desktop",
+  "version": "1.0.0",
+  "description": "Kyro Zine Generator: app de escritorio con servidor para editar en la red local",
+  "main": "main.js",
+  "author": "Kyro",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "prepare-app": "node scripts/copy-app.js",
+    "start": "npm run prepare-app && electron .",
+    "serve": "npm run prepare-app && node server.js",
+    "dist": "npm run prepare-app && electron-builder --win nsis"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "png-to-ico": "^2.1.8",
+    "rcedit": "^4.0.1"
+  },
+  "build": {
+    "appId": "ar.kyro.zinegenerator",
+    "productName": "Kyro Zine Generator",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "server.js",
+      "app/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "artifactName": "Kyro-Zine-Generator-Instalador.exe"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Kyro Zine Generator",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
+    },
+    "afterPack": "scripts/after-pack.js"
+  }
+}

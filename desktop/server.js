@@ -1,0 +1,213 @@
+'use strict';
+/* Kyro Zine Generator · servidor de la red local (LAN)
+   Sirve la app y hace de relé de la sala en vivo para quienes están en la
+   misma red. No guarda proyectos: solo reenvía mensajes entre navegadores y
+   guarda en memoria las imágenes de cada sala mientras el servidor está abierto.
+
+   Protocolo (el mismo que usa la sala por internet):
+     WS  /ws?room=CODIGO&id=ID   cliente -> {t:'track', meta} | {t:'bc', payload}
+                                 servidor -> {t:'presence', peers} | {t:'bc', payload}
+     PUT /asset/rooms/CODIGO/<sha1>.<ext>   guarda una imagen
+     GET /asset/rooms/CODIGO/<sha1>.<ext>   la devuelve
+     GET /lan-info                          {lan:true, port, urls:[...]}
+*/
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { WebSocketServer } = require('ws');
+
+const MAX_ASSET = 30 * 1024 * 1024;
+const MAX_TOTAL = 600 * 1024 * 1024;
+const ROOM_RE = /^[A-Z0-9]{4,12}$/;
+const ASSET_RE = /^\/asset\/rooms\/([A-Z0-9]{4,12})\/([a-f0-9]{40})\.(jpg|png|webp|gif)$/;
+const MIME = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' };
+const FILES = { '/': 'index.html', '/index.html': 'index.html', '/favicon.svg': 'favicon.svg' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.svg': 'image/svg+xml' };
+
+function lanAddresses() {
+  const out = [];
+  const nets = os.networkInterfaces();
+  Object.keys(nets).forEach((name) => {
+    (nets[name] || []).forEach((n) => {
+      if (n.family === 'IPv4' && !n.internal) out.push(n.address);
+    });
+  });
+  return out;
+}
+
+function cleanMeta(m) {
+  m = m && typeof m === 'object' ? m : {};
+  return {
+    name: String(m.name || '').slice(0, 24),
+    color: /^#[0-9a-fA-F]{3,8}$/.test(m.color || '') ? m.color : '#888888',
+    page: Number.isInteger(m.page) && m.page >= 0 && m.page < 10000 ? m.page : 0,
+  };
+}
+
+function createServer({ port = 3737, root }) {
+  const rooms = new Map();   // code -> Map(id -> { ws, meta })
+  const assets = new Map();  // 'CODE/hash.ext' -> Buffer
+  let total = 0;
+
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url, 'http://localhost');
+    const p = url.pathname;
+
+    if (req.method === 'GET' && p === '/lan-info') {
+      const listening = server.address();
+      const prt = listening && listening.port ? listening.port : port;
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      res.end(JSON.stringify({ lan: true, port: prt, urls: lanAddresses().map((a) => 'http://' + a + ':' + prt + '/') }));
+      return;
+    }
+
+    const am = ASSET_RE.exec(p);
+    if (am) {
+      const key = am[1] + '/' + am[2] + '.' + am[3];
+      if (req.method === 'GET') {
+        const buf = assets.get(key);
+        if (!buf) { res.writeHead(404); res.end(); return; }
+        res.writeHead(200, { 'Content-Type': MIME[am[3]], 'Cache-Control': 'public, max-age=31536000, immutable' });
+        res.end(buf);
+        return;
+      }
+      if (req.method === 'PUT') {
+        const chunks = [];
+        let size = 0;
+        let aborted = false;
+        req.on('data', (c) => {
+          size += c.length;
+          if (size > MAX_ASSET) { aborted = true; res.writeHead(413); res.end(); req.destroy(); return; }
+          chunks.push(c);
+        });
+        req.on('end', () => {
+          if (aborted) return;
+          if (!assets.has(key)) {
+            if (total + size > MAX_TOTAL) { res.writeHead(507); res.end(); return; }
+            assets.set(key, Buffer.concat(chunks));
+            total += size;
+          }
+          res.writeHead(201);
+          res.end();
+        });
+        return;
+      }
+      res.writeHead(405); res.end();
+      return;
+    }
+
+    if (req.method === 'GET' && Object.prototype.hasOwnProperty.call(FILES, p)) {
+      const file = path.join(root, FILES[p]);
+      fs.readFile(file, (err, data) => {
+        if (err) { res.writeHead(404); res.end('No encuentro ' + FILES[p]); return; }
+        res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+        res.end(data);
+      });
+      return;
+    }
+
+    res.writeHead(404);
+    res.end();
+  });
+
+  const wss = new WebSocketServer({ noServer: true, maxPayload: 2 * 1024 * 1024 });
+
+  function broadcastPresence(code) {
+    const room = rooms.get(code);
+    if (!room) return;
+    const peers = {};
+    room.forEach((v, id) => { peers[id] = v.meta; });
+    const msg = JSON.stringify({ t: 'presence', peers });
+    room.forEach((v) => { if (v.ws.readyState === 1) v.ws.send(msg); });
+  }
+
+  function dropRoomAssets(code) {
+    const prefix = code + '/';
+    assets.forEach((buf, key) => {
+      if (key.startsWith(prefix)) { total -= buf.length; assets.delete(key); }
+    });
+  }
+
+  server.on('upgrade', (req, socket, head) => {
+    const url = new URL(req.url, 'http://localhost');
+    const room = (url.searchParams.get('room') || '').toUpperCase();
+    const id = url.searchParams.get('id') || '';
+    if (url.pathname !== '/ws' || !ROOM_RE.test(room) || !id || id.length > 64) {
+      socket.destroy();
+      return;
+    }
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      let members = rooms.get(room);
+      if (!members) { members = new Map(); rooms.set(room, members); }
+      const old = members.get(id);
+      if (old) { try { old.ws.close(); } catch (e) { /* ya cerrado */ } }
+      members.set(id, { ws, meta: cleanMeta({}) });
+      ws.isAlive = true;
+      ws.on('pong', () => { ws.isAlive = true; });
+      broadcastPresence(room);
+
+      ws.on('message', (data) => {
+        let m;
+        try { m = JSON.parse(String(data)); } catch (e) { return; }
+        if (m.t === 'track') {
+          const me = members.get(id);
+          if (me && me.ws === ws) { me.meta = cleanMeta(m.meta); broadcastPresence(room); }
+        } else if (m.t === 'bc' && m.payload) {
+          const out = JSON.stringify({ t: 'bc', payload: m.payload });
+          members.forEach((v, other) => {
+            if (other !== id && v.ws.readyState === 1) v.ws.send(out);
+          });
+        }
+      });
+      ws.on('close', () => {
+        const me = members.get(id);
+        if (me && me.ws === ws) members.delete(id);
+        broadcastPresence(room);
+        if (members.size === 0) {
+          setTimeout(() => {
+            const r = rooms.get(room);
+            if (r && r.size === 0) { rooms.delete(room); dropRoomAssets(room); }
+          }, 10 * 60 * 1000).unref();
+        }
+      });
+    });
+  });
+
+  const beat = setInterval(() => {
+    wss.clients.forEach((ws) => {
+      if (!ws.isAlive) { ws.terminate(); return; }
+      ws.isAlive = false;
+      try { ws.ping(); } catch (e) { /* ignorar */ }
+    });
+  }, 30000);
+  beat.unref();
+
+  return new Promise((resolve, reject) => {
+    let tryPort = port;
+    const attempt = () => {
+      server.once('error', (err) => {
+        if (err.code === 'EADDRINUSE' && tryPort < port + 20) { tryPort += 1; attempt(); } else reject(err);
+      });
+      server.listen(tryPort, '0.0.0.0', () => {
+        resolve({
+          port: server.address().port,
+          urls: lanAddresses().map((a) => 'http://' + a + ':' + server.address().port + '/'),
+          close: () => { clearInterval(beat); wss.close(); server.close(); },
+        });
+      });
+    };
+    attempt();
+  });
+}
+
+module.exports = { createServer, lanAddresses };
+
+if (require.main === module) {
+  const root = fs.existsSync(path.join(__dirname, 'app', 'index.html')) ? path.join(__dirname, 'app') : path.join(__dirname, '..');
+  createServer({ port: Number(process.env.PORT) || 3737, root }).then((s) => {
+    console.log('Kyro Zine Generator (LAN)');
+    console.log('  En esta computadora: http://127.0.0.1:' + s.port + '/');
+    s.urls.forEach((u) => console.log('  En tu red:           ' + u));
+  }).catch((e) => { console.error(e.message); process.exit(1); });
+}
