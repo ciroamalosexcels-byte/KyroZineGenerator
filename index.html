@@ -3981,7 +3981,15 @@ function layoutStageCanvas(){
   canvas.style.width = dw+'px';
   canvas.style.height = dh+'px';
   book.style.padding = M+'px';
-  book.style.setProperty('--shift', (dw/4)+'px');
+  /* the cover shift follows the zoom: apply it at once, never as a slide, or the
+     anchor point under the cursor is measured mid-animation and the view drifts */
+  const shiftPx = (dw/4)+'px';
+  if(book.style.getPropertyValue('--shift')!==shiftPx){
+    book.style.transition = 'none';
+    book.style.setProperty('--shift', shiftPx);
+    void book.offsetWidth;
+    book.style.transition = '';
+  }
   document.getElementById('vz-label').textContent = Math.round(viewZoom*100)+'%';
 }
 function setViewZoom(z){
