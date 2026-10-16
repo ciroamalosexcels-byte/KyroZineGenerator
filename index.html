@@ -4058,8 +4058,10 @@ function syncImageControls(){
     if(dt>160) swipeStream = false;
     const bigStep = Math.abs(dy) >= 40;
     if(!e.ctrlKey){
-      const notch = bigStep && e.deltaX===0 && dt>40 && !swipeStream;
-      if(!notch){ if(dt<40) swipeStream = true; return; }       // trackpad swipe: let the scroller pan
+      /* a wheel spun fast sends its notches less than 40 ms apart: they must all
+         zoom, never fall through to the native scroll (that moved the view up) */
+      const notch = bigStep && e.deltaX===0 && !swipeStream;
+      if(!notch){ if(!bigStep && dt<40) swipeStream = true; return; }   // trackpad swipe: let the scroller pan
       e.preventDefault();
       setViewZoomAt(viewZoom*Math.exp(-dy*0.0012), e.clientX, e.clientY);
       return;
