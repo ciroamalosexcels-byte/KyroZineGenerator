@@ -112,6 +112,7 @@ function createServer({ port = 3737, root }) {
   const rooms = new Map();   // code -> Map(id -> { ws, meta })
   const assets = new Map();  // 'CODE/hash.ext' -> Buffer
   let total = 0;
+  let openFile = null;       // proyecto .kyro abierto con doble clic (solo lo pide esta compu)
 
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -128,6 +129,18 @@ function createServer({ port = 3737, root }) {
         self: { name: os.hostname(), rooms: mine.slice(0, 20) },
         peers: list.map((q) => Object.assign({ url: 'http://' + q.host + ':' + q.port + '/' }, q)),
       }));
+      return;
+    }
+
+    /* doble clic en un .kyro: la app de esta compu lo pide para abrirlo (la red no llega a esto) */
+    if (req.method === 'GET' && p === '/abrir-kyro') {
+      const local = /^(::1|127\.|::ffff:127\.)/.test(req.socket.remoteAddress || '');
+      if (!local || !openFile) { res.writeHead(404); res.end(); return; }
+      fs.readFile(openFile, (err, data) => {
+        if (err) { res.writeHead(404); res.end(); return; }
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Nombre': encodeURIComponent(path.basename(openFile)) });
+        res.end(data);
+      });
       return;
     }
 
@@ -278,6 +291,7 @@ function createServer({ port = 3737, root }) {
           port: server.address().port,
           urls: lanAddresses().map((a) => 'http://' + a + ':' + server.address().port + '/'),
           close: () => { clearInterval(beat); discovery.close(); wss.close(); server.close(); },
+          abrir: (file) => { openFile = file; },
         });
       });
     };

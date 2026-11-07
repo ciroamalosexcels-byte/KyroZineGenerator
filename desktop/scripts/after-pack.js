@@ -12,6 +12,8 @@ exports.default = async function afterPack(context) {
   const exe = path.join(context.appOutDir, context.packager.appInfo.productFilename + '.exe');
   await rcedit(exe, {
     icon: path.join(__dirname, '..', 'build', 'icon.ico'),
+    'product-version': context.packager.appInfo.version,
+    'file-version': context.packager.appInfo.version,
     'version-string': {
       ProductName: 'Kyro Zine Generator',
       FileDescription: 'Kyro Zine Generator',

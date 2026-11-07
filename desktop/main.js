@@ -2,7 +2,8 @@
 /* Kyro Zine Generator · app de escritorio
    Abre una ventana con la app y levanta, en segundo plano, el servidor de la
    red local (server.js): quienes estén en la misma red entran con la
-   dirección que figura en el panel "Colaborar". */
+   dirección que figura en el panel "Colaborar".
+   Doble clic en un .kyro: se abre en el programa (si ya está abierto, en la misma ventana). */
 const { app, BrowserWindow, shell, Menu } = require('electron');
 const fs = require('fs');
 const path = require('path');
@@ -12,12 +13,24 @@ const root = fs.existsSync(path.join(__dirname, 'app', 'index.html')) ? path.joi
 let server = null;
 let win = null;
 
+// el .kyro que llegó al abrir el programa (doble clic en el archivo)
+const kyroArg = (argv) => argv.slice(1).find((a) => /\.kyro$/i.test(a) && fs.existsSync(a));
+function load(file) {
+  if (!win || !server) return;
+  if (file) server.abrir(path.resolve(file));
+  win.loadURL('http://127.0.0.1:' + server.port + '/' + (file ? '?abrir=1' : ''));
+}
+
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
-    if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
+  app.on('second-instance', (e, argv) => {
+    if (!win) return;
+    if (win.isMinimized()) win.restore();
+    win.focus();
+    const file = kyroArg(argv);
+    if (file) load(file);
   });
 
   app.whenReady().then(async () => {
@@ -40,7 +53,7 @@ if (!gotLock) {
       autoHideMenuBar: true,
       webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },
     });
-    win.loadURL('http://127.0.0.1:' + server.port + '/');
+    load(kyroArg(process.argv));
     /* los enlaces externos se abren en el navegador, no dentro de la app */
     win.webContents.setWindowOpenHandler(({ url }) => {
       if (/^https?:/i.test(url)) shell.openExternal(url);

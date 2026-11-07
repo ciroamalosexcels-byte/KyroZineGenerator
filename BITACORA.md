@@ -1,11 +1,138 @@
-# Panel de miniaturas basado en hojas — diseño
+# Bitácora · Kyro Zine Generator
+
+Todo el proyecto en un solo lugar: qué es, cómo se arma el programa, qué se hizo, qué falta y las investigaciones de diseño.
+(Antes estaba repartido en `CHANGELOG.md`, `IDEAS.md`, `desktop/README.md` y `docs/superpowers/specs/`: todo eso está acá, sin cambios en el contenido.)
+
+- [1. Qué es](#1-qué-es)
+- [2. Programa para Windows](#2-programa-para-windows)
+- [3. Registro de cambios](#3-registro-de-cambios)
+- [4. Pendientes e ideas sueltas](#4-pendientes-e-ideas-sueltas)
+- [5. Hoja de ruta original](#5-hoja-de-ruta-original)
+- [6. Investigaciones y diseño](#6-investigaciones-y-diseño)
+
+## 1. Qué es
+
+Editor de fanzines en el navegador: páginas, imposición para imprimir y doblar, capas, texto, dibujo, exportar a PDF y trabajar de a varios en vivo.
+
+- **En la web:** https://ciroamalosexcels-byte.github.io/KyroZineGenerator/ (`index.html` de la raíz, publicado por `.github/workflows/pages.yml`).
+- **Programa para Windows:** carpeta `desktop/`. Abre la app en su propia ventana y levanta un servidor en la red local para editar de a varios sin internet.
+- **Ejemplo:** `ejemplos/prueba-16-paginas.kyro`, un proyecto de 16 páginas para probar.
+
+## 2. Programa para Windows
+
+Abre la app en su propia ventana y levanta un servidor en la red local. Quienes estén en la misma red (wifi o cable) entran desde el navegador con la dirección que muestra el panel **Colaborar**, y editan el mismo proyecto en vivo. No necesita internet ni cuentas.
+
+### Instalarlo
+- Ejecutá `Kyro-Zine-Generator-Setup-1.4.0.exe` (Windows 10 y 11) o `Kyro-Zine-Generator-Setup-1.4.0-Windows7.exe` (Windows 7 y 8.1).
+- Si Windows muestra **"Windows protegió su PC"**: *Más información → Ejecutar de todas formas*. Aparece porque el instalador no tiene firma digital paga.
+- Se puede elegir la carpeta. Quedan accesos en el escritorio y en el menú Inicio, y los archivos `.kyro` se abren con doble clic.
+- La primera vez, Windows pregunta si permitís el acceso a la red: aceptá en **redes privadas**.
+
+### Usarlo
+- Abrí **Colaborar** (icono de personas) → **Crear sala**. Copiá el enlace (`http://192.168.x.x:3737/#sala=CODIGO`) y mandalo a quien esté en tu red.
+- Doble clic en un `.kyro`: se abre en el programa (si ya estaba abierto, en la misma ventana). Para seguir guardando en ese archivo, usá **Guardar como** y elegilo.
+
+### Armarlo
+```
+cd desktop
+npm install
+npm run dist       # dist/Kyro-Zine-Generator-Setup-<versión>.exe (Windows 10/11)
+npm run dist:win7  # dist-win7/… (Windows 7/8.1, Electron 22)
+npm start          # abre la app sin empaquetar
+npm run serve      # solo el servidor, sin ventana (usa Node)
+```
+`npm run prepare-app` copia `index.html` y `favicon.svg` a `desktop/app/` (lo hacen solos `start`, `serve` y `dist`). `scripts/after-pack.js` le pone el icono y la versión al .exe con rcedit (winCodeSign necesita permisos de administrador).
+
+### Servidores en la red
+Cada programa anuncia por UDP (puerto 3738, broadcast) su nombre y las salas con gente. En **Colaborar**, sin sala, aparece la lista **En tu red** con los demás servidores: tocás el código de una sala para entrar, o **+ sala** para crear una en esa computadora. Si Windows pregunta por el firewall, aceptá en redes privadas.
+
+### Qué hace el servidor (`desktop/server.js`)
+- Sirve `index.html` y `favicon.svg`.
+- `WS /ws?room=CODIGO&id=ID`: reenvía los mensajes entre quienes están en la sala y mantiene la lista de presentes.
+- `PUT|GET /asset/rooms/CODIGO/<sha1>.<ext>`: guarda en memoria las imágenes de la sala (máx. 30 MB cada una, 600 MB en total) mientras el programa está abierto.
+- `GET /lan-info`: direcciones de la red para compartir.
+- `GET /lan-peers`: otros servidores descubiertos y sus salas.
+- `GET /abrir-kyro`: el `.kyro` abierto con doble clic (solo desde esta compu; desde la red da 404).
+- No guarda proyectos: cada persona guarda el suyo (`.kyro`).
+
+## 3. Registro de cambios
+
+Lo más nuevo va abajo del todo.
+
+### Hasta la versión 1.3.0 del instalador y después
+
+- Selección (S): marco, círculo, lazo y pluma recta; copiar/cortar/pegar, borrar, recortar fuera, pasar a capa nueva, mover/escalar/girar trazos, pintar solo dentro.
+- Capas: candado, renombrar con doble clic, arrastrar desde el icono.
+- Exportación: presets Borrador / Para imprimir (300 dpi) / Máxima calidad, exportar una hoja sola.
+- PDF: se importa desde el "+" de la hoja; páginas o imágenes sueltas, elegir a qué hoja va cada una.
+- Colaboración: internet (Supabase), red local (programa de escritorio) y conexión directa (WebRTC con QR); cursores, presencia, chat con historial (viaja al entrar y se guarda por sala), "Salas cerca", perfil con 30 iconos y 12 colores, código de sala por sonido.
+- Voz robótica (SAM, español rioplatense): apagada por defecto, interruptor en Ajustes y junto al chat.
+- Escritorio: instalador NSIS por usuario (`desktop\dist\Kyro-Zine-Generator-Instalador-1.3.0.exe`), servidor LAN, icono sin borde negro.
+- Celular (≤700px): barra de herramientas fija abajo, colaboración a pantalla completa.
+- Zoom con la rueda (9e3cb39, 2808c70):
+  - El libro ya no se corre a la derecha: el corrimiento de tapa/contratapa se aplica al instante, sin la animación de 0,8 s.
+  - Girar la rueda rápido siempre hace zoom; antes pasaba al desplazamiento nativo y la vista subía.
+
+## Pendientes / ideas sueltas
+
+- Probar con dispositivos reales: sala por internet, red local y conexión directa; sonido con parlante y micrófono; voz audible; heurística rueda vs. trackpad.
+- Rotar las claves `service_role` y secret del proyecto Supabase `kyrozine` (quedaron en una conversación).
+- Renombrar la organización de Supabase a "Kyro Zine Generator" (solo desde el panel) y mover los proyectos `dashboardBioMarketing` y `crm-peques`.
+- Voz Fred auténtica: generar audios con `say -v Fred` en una Mac.
+- Rediseño completo de la app para celular.
+- Instalador sin firmar (SmartScreen avisa).
+- Selección: la pluma es de segmentos rectos y hay una sola selección a la vez.
+- Fotos acumuladas en el bucket de Supabase (1 GB gratis, sin limpieza).
+- El historial del chat se pierde si la sala queda vacía y nadie lo guardó (solo persiste por navegador; en conexión directa no se guarda).
+
+### Versión 1.4.0 del programa (7 de noviembre de 2026)
+- Instalador como el de Kyro Neo Board: se elige la carpeta, en español, accesos en el escritorio y en Inicio. Se llama `Kyro-Zine-Generator-Setup-1.4.0.exe`.
+- Doble clic en un `.kyro` lo abre en el programa (si ya está abierto, en la misma ventana). En ese caso no se reconecta el archivo de la sesión anterior, para no guardar un proyecto encima de otro.
+- Versión para Windows 7 y 8.1 (Electron 22).
+- Las propiedades del .exe muestran la versión del programa (antes, la de Electron).
+- El programa trae la app al día: el instalador anterior tenía una copia vieja de `index.html`.
+- Carpeta ordenada: la documentación quedó en esta bitácora y el proyecto de prueba en `ejemplos/`.
+
+## 4. Pendientes e ideas sueltas
+
+
+- Probar con dispositivos reales: sala por internet, red local y conexión directa; sonido con parlante y micrófono; voz audible; heurística rueda vs. trackpad.
+- Rotar las claves `service_role` y secret del proyecto Supabase `kyrozine` (quedaron en una conversación).
+- Renombrar la organización de Supabase a "Kyro Zine Generator" (solo desde el panel) y mover los proyectos `dashboardBioMarketing` y `crm-peques`.
+- Voz Fred auténtica: generar audios con `say -v Fred` en una Mac.
+- Rediseño completo de la app para celular.
+- Instalador sin firmar (SmartScreen avisa).
+- Selección: la pluma es de segmentos rectos y hay una sola selección a la vez.
+- Fotos acumuladas en el bucket de Supabase (1 GB gratis, sin limpieza).
+- El historial del chat se pierde si la sala queda vacía y nadie lo guardó (solo persiste por navegador; en conexión directa no se guarda).
+
+## 5. Hoja de ruta original
+
+Así estaba planteado el proyecto (todo hecho). Se conserva por las notas de investigación de cada punto.
+
+Orden sugerido (de menor a mayor esfuerzo):
+
+1. [x] Exportar una hoja sola (botón de descarga en la vista previa, modo Hojas)
+2. [x] Más resolución: escenario nítido con el zoom, diálogo de exportación (Borrador / Para imprimir / Máxima calidad), importaciones sin recomprimir de más, muestreo del pincel
+3. [x] Bloquear capas (candado en cada capa del panel)
+4. [x] Importar PDF de varias páginas (Ajustes → Importar PDF…): páginas o imágenes sueltas, y a qué hoja va cada una
+5. [x] Herramientas de selección (S): marco, círculo, lazo y pluma; copiar/cortar/pegar, borrar, recortar fuera, pasar a capa nueva, mover trazos, pintar solo dentro
+6. [x] Mesa de trabajo multiplayer: salas en vivo (internet con Supabase, red local con la app de escritorio, conexión directa con QR), chat, código por sonido, perfil con icono y color
+7. [x] Modo voz robótica (Ajustes → activar): al pasar el mouse (hover) por una herramienta, una voz sintetizada de estilo "Fitter Happier" (Radiohead) dice su nombre. Investigar: `speechSynthesis` del navegador (voces disponibles según el sistema), tono/velocidad bajos para el efecto robótico; no se puede usar la voz original del tema.
+8. [x] Modo LAN (carpeta desktop/): al abrir el programa compilado (versión de escritorio), se levanta un servidor en la red local y otras personas de la misma red editan el mismo proyecto, sin internet ni cuentas. Requiere empaquetar la app (Electron o Tauri) con un servidor WebSocket local; reutiliza el protocolo de la sala en vivo (mensajes por página + imágenes por hash), cambiando Supabase por ese servidor.
+
+## 6. Investigaciones y diseño
+
+Registro de diseño de las sesiones de trabajo: el panel de miniaturas por hojas, la vista previa, la imposición, el tema, las herramientas y el registro de la versión 0.9.0. Va completo y en el orden en que se escribió.
+
+## Panel de miniaturas basado en hojas — diseño
 
 **Fecha:** 2026-08-28
 **Estado:** aprobado por el usuario, implementado
 **Ámbito:** solo `#sidebar` / `renderSidebar()` en `index.html`. No toca `#impose-panel`
 (la vista grande de hoja con pliegue en modo "Imposición"), que sigue igual.
 
-## 1. Origen
+### 1. Origen
 
 El usuario adjuntó un boceto a mano de una interfaz nueva para Kyro Zine Generator.
 Pedido textual: el panel izquierdo no debe ser "una tira larga con todos los
@@ -17,7 +144,7 @@ El boceto muestra una miniatura con un grid de 2 filas × 4 columnas (números
 1,3,5,7 arriba / 2,4,6,8 abajo) dentro de un rectángulo, junto a los controles de
 Hoja (A4/A3), Cuadernillo (4/8/16) y Páginas que ya existen en el header actual.
 
-## 2. Por qué se agrupa de a máximo 2 hojas físicas por miniatura
+### 2. Por qué se agrupa de a máximo 2 hojas físicas por miniatura
 
 Cada página mide `pageMm() = {w: sheetW/2, h: sheetH}` (portrait, proporción
 1:√2 — la mitad de una hoja ISO horizontal). Si una miniatura ("carilla") muestra
@@ -41,7 +168,7 @@ una — el ejemplo que pidió el usuario — y en cualquier tamaño de cuadernil
 miniatura mantiene siempre una proporción ISO real (vertical con 1 hoja, horizontal
 con 2).
 
-## 3. Estructura de cada miniatura ("carilla")
+### 3. Estructura de cada miniatura ("carilla")
 
 - Contenedor `.sheet-thumb` con `aspect-ratio` fijado a `sheetW·g / sheetH`.
 - Grid interno `.sheet-thumb-grid` de 2 filas × `2g` columnas.
@@ -54,7 +181,7 @@ con 2).
   (reusa `renderThumb()`) con el número de página superpuesto, y conserva el
   botón "×" para vaciar la página que ya existía.
 
-## 4. Interacción
+### 4. Interacción
 
 - **Clic** en una celda → selecciona esa página (`goToPage`), igual que antes.
 - **Arrastrar y soltar**: como ahora la posición de cada página está fijada por el
@@ -63,14 +190,14 @@ con 2).
   Arrastrar la celda de la página 5 sobre la 12 intercambia lo que hay cargado en
   esas dos páginas; ninguna cambia de número de imposición.
 
-## 5. Qué no cambia
+### 5. Qué no cambia
 
 - El motor de imposición (`buildSheets`, `findSheetForPage`) — reutilizado tal cual.
 - El modo "Imposición" (`#impose-panel`, botón de vista previa de impresión) — sigue
   siendo la vista de hoja grande con pliegue y cruces de registro, sin cambios.
 - El editor de página inferior (`#edit-panel`) y el stage central de lectura.
 
-## 6. Modal "Vista previa" (libro terminado, no de impresión)
+### 6. Modal "Vista previa" (libro terminado, no de impresión)
 
 **Fecha:** 2026-08-28 (mismo día, iteración siguiente sobre este panel)
 
@@ -113,7 +240,7 @@ de página como badge HTML aparte del canvas — nunca se dibuja en el propio
 render de la página, así que ni las miniaturas del sidebar "contaminan" el
 render final ni hace falta quitar nada para el modal de vista previa.
 
-## 7. Corrección: la vista previa muestra hojas de impresión, no páginas de lectura
+### 7. Corrección: la vista previa muestra hojas de impresión, no páginas de lectura
 
 **Fecha:** 2026-08-28 (misma sesión, corrección sobre la sección 6)
 
@@ -139,7 +266,7 @@ inspeccionar el resultado de cerca antes de imprimir.
   del canvas (si no, el overlay de la animación quedaba con la geometría
   vieja, desincronizado del canvas ya reseteado).
 
-## 8. Otras correcciones pedidas en la misma sesión
+### 8. Otras correcciones pedidas en la misma sesión
 
 - **Sin emojis**: el ícono del botón "Vista previa" (antes un emoji 📖) se
   reemplazó por un SVG inline (un ojo), seleccionado con el estilo hand-rolled
@@ -167,7 +294,7 @@ inspeccionar el resultado de cerca antes de imprimir.
   `.color-popover[hidden]{display:none}`, mismo patrón que ya usan `.modal` y
   `#sidebar` en este archivo.
 
-## 9. Consolidación: un solo botón/función de vista previa, y fix de la animación
+### 9. Consolidación: un solo botón/función de vista previa, y fix de la animación
 
 **Fecha:** 2026-08-28 (misma sesión, tercera ronda de correcciones)
 
@@ -179,7 +306,7 @@ eliminar el botón "Vista previa de impresión" del header (y el panel que abrí
 y mover esa función al botón azul "Vista previa" del sidebar — es decir, dejar
 un solo punto de entrada para ver las hojas.
 
-### 9.1 Eliminación de `#impose-panel` y "Vista previa de impresión"
+#### 9.1 Eliminación de `#impose-panel` y "Vista previa de impresión"
 
 Como el modal de la sección 6/7 (botón azul) ya cubre exactamente esa función
 —mostrar cada hoja física, frente y dorso, con contenido real— se eliminó por
@@ -202,7 +329,7 @@ Hoja A3, Cuadernillo 8, Páginas 16 (el caso reportado): ahora navega
 correctamente "Hoja 1/4" → ... → "Hoja 4/4", sin ambigüedad (4 hojas físicas
 = 16 páginas / 4, sea cual sea el cuadernillo elegido).
 
-### 9.2 Fix: el punto de giro (lomo) ya no salta al entrar/salir de tapa o contratapa
+#### 9.2 Fix: el punto de giro (lomo) ya no salta al entrar/salir de tapa o contratapa
 
 **Causa raíz:** `#slide-view` centra el canvas del stage con flexbox
 (`justify-content:center`). Un spread de 2 páginas y una página sola (tapa o
@@ -243,7 +370,7 @@ nunca pasa por el caso que causaba el desfase.
 abajo — pero la conclusión de que nunca pasa por un estado de 1 sola página
 sigue valiendo igual.)*
 
-## 10. Corrección: la vista previa debe mostrar la carilla completa, no frente/dorso por separado
+### 10. Corrección: la vista previa debe mostrar la carilla completa, no frente/dorso por separado
 
 **Fecha:** 2026-08-28 (misma sesión, cuarta ronda)
 
@@ -281,7 +408,7 @@ proyecto) — la verificación de este cambio quedó limitada a revisión de
 código y chequeo de sintaxis (`node -e` parseando el bloque `<script>`), sin
 prueba visual en Chrome. El usuario prueba el resultado por su cuenta.
 
-## 11. Corrección: navegación hoja por hoja + botón de girar (flip frente/dorso)
+### 11. Corrección: navegación hoja por hoja + botón de girar (flip frente/dorso)
 
 **Fecha:** 2026-08-28 (misma sesión, quinta ronda)
 
@@ -318,7 +445,7 @@ sobre el fondo oscuro de la mesa de trabajo, no sobre una hoja blanca).
 Verificación: solo lectura de código + `node -e` parseando el `<script>` —
 sin navegador, según la directiva de la sección anterior.
 
-## 12. Corrección: "plancha" = el cuadernillo entero, no la hoja individual
+### 12. Corrección: "plancha" = el cuadernillo entero, no la hoja individual
 
 **Fecha:** 2026-08-28 (misma sesión, sexta ronda)
 
@@ -355,7 +482,7 @@ Label: `Cuadernillo K/Total — N hoja(s)`.
 
 Verificación: solo lectura de código + chequeo de sintaxis, sin navegador.
 
-## 13. Guardar/cargar proyecto (.kyro), fuentes propias, marco a 0, todo a Poppins
+### 13. Guardar/cargar proyecto (.kyro), fuentes propias, marco a 0, todo a Poppins
 
 **Fecha:** 2026-08-28 (misma sesión, séptima ronda)
 
@@ -396,7 +523,7 @@ Cuatro pedidos sueltos, todos chicos:
 Verificación: solo lectura de código + `node -e` parseando el `<script>` —
 sin navegador, según la directiva vigente.
 
-## 14. Rediseño de botones: planos, sin borde, sombra dura, animación al apretar
+### 14. Rediseño de botones: planos, sin borde, sombra dura, animación al apretar
 
 **Fecha:** 2026-08-29
 
@@ -449,7 +576,7 @@ con alguna animación al apretarlos.
 Verificación: solo lectura de código, balance de llaves del CSS
 (`{` == `}`) y chequeo de sintaxis del `<script>` — sin navegador.
 
-## 15. La plancha también gira al cambiar de cuadernillo
+### 15. La plancha también gira al cambiar de cuadernillo
 
 **Fecha:** 2026-08-29
 
@@ -477,7 +604,7 @@ gire desde un borde, como una hoja real dando una vuelta de 180°: se cambió a
 `direction==='next' ? 'left center' : 'right center'`, mismo criterio de
 bisagra que ya usa `makePager` en el editor principal.
 
-## 16. Tema oscuro (mezclado con negros) + se saca la barra inferior
+### 16. Tema oscuro (mezclado con negros) + se saca la barra inferior
 
 **Fecha:** 2026-08-29
 
@@ -528,7 +655,7 @@ cambia).
 Verificación: solo lectura de código + balance de llaves del CSS + chequeo
 de sintaxis del `<script>` — sin navegador, según la directiva vigente.
 
-## 17. Mejora de contraste sobre el tema oscuro
+### 17. Mejora de contraste sobre el tema oscuro
 
 **Fecha:** 2026-08-29
 
@@ -564,7 +691,7 @@ recién se aplicó.
 Verificación: solo lectura de código + balance de llaves del CSS + chequeo
 de sintaxis — sin navegador.
 
-## 18. Se revierte el anclaje del lomo: página sola centrada + transición gradual
+### 18. Se revierte el anclaje del lomo: página sola centrada + transición gradual
 
 **Fecha:** 2026-08-29
 
@@ -594,7 +721,7 @@ gradual, no instantáneo.
 
 Verificación: solo lectura de código + chequeo de sintaxis — sin navegador.
 
-## 19. A4: 4 páginas por cara (2×2), PDF vertical, corte al medio
+### 19. A4: 4 páginas por cara (2×2), PDF vertical, corte al medio
 
 **Fecha:** 2026-10-13
 
@@ -625,7 +752,7 @@ cantidad de páginas.
 Verificación: chequeo de sintaxis del `<script>` y de la imposición con node —
 sin navegador, según la directiva vigente.
 
-## 20. Papel + tamaño de página independientes, un solo librito, menú visual, estética
+### 20. Papel + tamaño de página independientes, un solo librito, menú visual, estética
 
 **Fecha:** 2026-10-13
 
@@ -662,7 +789,7 @@ la hoja 1.
 Verificación: sintaxis del `<script>`, ids del DOM y simulación de la
 imposición con node — sin navegador, según la directiva vigente.
 
-## 21. Herramientas tipo Photoshop, pliego, volteo corregido, botones sin borde
+### 21. Herramientas tipo Photoshop, pliego, volteo corregido, botones sin borde
 
 **Fecha:** 2026-10-13
 
@@ -694,7 +821,7 @@ imposición con node — sin navegador, según la directiva vigente.
 Verificación: sintaxis, ids del DOM y una corrida de humo del script con un
 DOM simulado — sin navegador, según la directiva vigente.
 
-## 22. Libro que se desliza, 3D en 2D, pinceles, deshacer, archivos .kyro
+### 22. Libro que se desliza, 3D en 2D, pinceles, deshacer, archivos .kyro
 
 **Fecha:** 2026-10-13
 
@@ -730,7 +857,7 @@ DOM simulado — sin navegador, según la directiva vigente.
 Verificación: sintaxis, ids y corridas de humo con DOM simulado (pinceles,
 escena 3D, instructivo, historial) — sin navegador, según la directiva vigente.
 
-## 23. Librito 3D con grosor, mesa a 45° y arreglos
+### 23. Librito 3D con grosor, mesa a 45° y arreglos
 
 **Fecha:** 2026-10-13
 
@@ -749,7 +876,7 @@ escena 3D, instructivo, historial) — sin navegador, según la directiva vigent
   70 px), y los eventos de puntero se escuchan en toda la mesa.
 - **Selección de texto** desactivada salvo en campos de texto.
 
-## 24. Instructivo revisado, libro parado y campos con rueda
+### 24. Instructivo revisado, libro parado y campos con rueda
 
 **Fecha:** 2026-10-13
 
@@ -770,7 +897,7 @@ escena 3D, instructivo, historial) — sin navegador, según la directiva vigent
 - **Campos numéricos:** la rueda sobre cualquier campo suma (arriba) o resta
   (abajo); Shift ×5. La presión del lápiz es un nivel de 0 a 100 %.
 
-## 25. Panel derecho con capas; texto en la barra de arriba
+### 25. Panel derecho con capas; texto en la barra de arriba
 
 **Fecha:** 2026-10-13
 
@@ -784,7 +911,7 @@ escena 3D, instructivo, historial) — sin navegador, según la directiva vigent
   Debajo: controles de imagen y fondo.
 - **Panel izquierdo** más angosto (158 px).
 
-## 26. Texto libre, capas borrables, imágenes extra, "Doble"
+### 26. Texto libre, capas borrables, imágenes extra, "Doble"
 
 **Fecha:** 2026-10-13
 
@@ -808,7 +935,7 @@ escena 3D, instructivo, historial) — sin navegador, según la directiva vigent
 
 ---
 
-# Registro de la sesión del 12–13 de octubre de 2026 (versión 0.9.0)
+## Registro de la sesión del 12–13 de octubre de 2026 (versión 0.9.0)
 
 Versión estimada: **0.9.0**. Partimos de la 0.2 (spec del panel de hojas e
 `index.html` de fines de agosto) y esta sesión sumó casi todo lo que hoy es la
@@ -816,7 +943,7 @@ herramienta: imposición real de zine, herramientas de edición, dibujo, capas,
 vista previa 3D, archivos `.kyro` con autoguardado y una nueva identidad
 visual. Falta pasarla por mucho uso real y por Firefox/Safari para llamarla 1.0.
 
-## Impresión e imposición
+### Impresión e imposición
 - **Papel y página independientes:** se elige el papel (A3 o A4) y el tamaño de
   cada página del zine (A4, A5 o A6). Combinaciones válidas: A4→A5 (2 por cara),
   A4→A6 (4), A3→A4 (2), A3→A5 (4), A3→A6 (8).
@@ -832,7 +959,7 @@ visual. Falta pasarla por mucho uso real y por Firefox/Safari para llamarla 1.0.
   real: imprimir, cortar, juntar las tiras, doblar, una hoja dentro de otra y
   grampar desde adentro (dos grampas finas sobre el doblez).
 
-## Edición en el escenario
+### Edición en el escenario
 - **Mesa de corte verde** ocupando todo el fondo, con las barras flotando encima;
   Tab oculta todos los paneles y deja solo la mesa y el header.
 - **Página sola centrada** que se desliza al abrir o cerrar; el volteo de página
@@ -850,7 +977,7 @@ visual. Falta pasarla por mucho uso real y por Firefox/Safari para llamarla 1.0.
 - **Deshacer / rehacer** (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z) con botones arriba a la
   izquierda; el cambio de color en vivo cuenta como un solo paso.
 
-## Imagen, texto y dibujo
+### Imagen, texto y dibujo
 - **Capas por página:** Imagen, Dibujo, Texto, imágenes extra y Fondo fijo; ojo
   para ocultar, basura, y reordenar arrastrando con animación. Orden y
   visibilidad también valen en el PDF.
@@ -870,7 +997,7 @@ visual. Falta pasarla por mucho uso real y por Firefox/Safari para llamarla 1.0.
 - **Imágenes JPG, PNG, TIFF y RAW** (de los RAW se usa el JPEG grande embebido).
 - **Se quitó** el marco de la imagen (ya lo cubre el fondo) y los sliders.
 
-## Vista previa
+### Vista previa
 - Encabezado con título, especificaciones y cruz de cerrar; abre en **Hojas**
   (sin cortar) y tiene el modo **Zine**.
 - **Zine 3D** hecho en canvas 2D (estilo PlayStation): parado sobre la mesa,
@@ -879,7 +1006,7 @@ visual. Falta pasarla por mucho uso real y por Firefox/Safari para llamarla 1.0.
 - Se corrigieron: orden de dibujo de las hojas (siempre se veía la página 2),
   cantos que desaparecían con la perspectiva y la mesa que se rompía al bajar.
 
-## Archivos y guardado
+### Archivos y guardado
 - **Guardar, Guardar como… y Abrir…** con el selector del sistema; siempre
   `.kyro`; Ctrl+S.
 - **Autoguardado** en el navegador (localStorage + IndexedDB, sin tope de 5 MB)
@@ -887,7 +1014,7 @@ visual. Falta pasarla por mucho uso real y por Firefox/Safari para llamarla 1.0.
   header y reconexión con un enlace subrayado.
 - Al restaurar se precargan también las imágenes extra y las de "Doble".
 
-## Identidad visual y comodidad
+### Identidad visual y comodidad
 - Estilo de fotocopia: papel crema, tinta negra, rojo y resaltador amarillo, una
   sola tipografía (Archivo). Sin degradés.
 - Botones sin borde, en píldora o círculo, con sombra dura y animación al apretar;
@@ -901,7 +1028,7 @@ visual. Falta pasarla por mucho uso real y por Firefox/Safari para llamarla 1.0.
 - Texto no seleccionable fuera de los campos; "librito" pasó a "zine" en toda la
   interfaz.
 
-## Conocido / pendiente
+### Conocido / pendiente
 - La presión de la tableta depende de que Windows Ink esté activo en el driver
   Wacom (la barra del pincel muestra si llega como "tableta" o "mouse").
 - Fuentes del sistema y archivo de autoguardado: solo Chrome y Edge.
@@ -910,7 +1037,7 @@ visual. Falta pasarla por mucho uso real y por Firefox/Safari para llamarla 1.0.
 - Ideas que quedaron: varias cajas de texto por página, panel 3D en vivo mientras
   se edita, más formatos de papel.
 
-## Agregado posterior (misma sesión)
+### Agregado posterior (misma sesión)
 - **Deshacer persistente:** el historial (hasta 30 pasos) se guarda dentro del
   `.kyro` y en el autoguardado; al recargar o reabrir se puede seguir con
   Ctrl+Z. Formato 2: las imágenes van una sola vez en una tabla `images` y el
@@ -921,3 +1048,4 @@ visual. Falta pasarla por mucho uso real y por Firefox/Safari para llamarla 1.0.
 - **Modo "Libre"** de ajuste de imagen: el tamaño no se reajusta al rotar.
 - Cursores del sistema en lugar de íconos propios; la lupa mantiene su cursor
   con el clic derecho.
+
